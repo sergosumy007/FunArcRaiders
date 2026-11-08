@@ -500,7 +500,7 @@ def main():
         if drops:
             det["drop"] = drops
         if w["best"]:
-            det["best"] = sorted(w["best"], key=lambda b: -b["t"])[:8]
+            det["best"] = sorted((b for b in w["best"] if not b["a"].isdigit()), key=lambda b: -b["t"])[:8]
         rew = [quest_by_slug[q] for q in w["quests"] if q in quest_by_slug]
         if rew:
             det["rew"] = rew
@@ -556,6 +556,35 @@ def main():
             entry["c"] = dict(counts)
         core_quests.append(entry)
         quest_details[qid] = det
+
+    # Quest items are placed by the game at fixed quest points; no container holds them.
+    by_item, item_by_id = {e["id"]: e for e in core_items}, {x["id"]: x for x in items}
+    deliver = re.compile(r"^\s*(deliver|hand in|turn in|bring)\b", re.I)
+    placed = set()
+    for qid, q in quests.items():
+        objectives = [(o.get("en") or "") for o in q.get("objectives") or []]
+        rows = {slug: per_map[slug]["layer"]["Q"].get(qid) or [] for slug, _ in MAPS}
+        if not any(rows.values()):
+            continue
+        have = {p[2] for pts in rows.values() for p in pts if p[2] is not None}
+        for r in q.get("requiredItemIds") or []:
+            iid = r.get("itemId")
+            if not r.get("questItem") or iid not in item_ids:
+                continue
+            words = [w.lower() for w in re.findall(r"[A-Za-z]{4,}", (item_by_id[iid].get("name") or {}).get("en") or "")]
+            score = {i: sum(1 for w in words if w in t.lower()) for i, t in enumerate(objectives) if i in have and not deliver.match(t)}
+            top = max(score.values(), default=0)
+            best_steps = [i for i, n in score.items() if n == top] if top else []
+            steps = best_steps if len(best_steps) == 1 else None
+            fix = {"q": qid, **({"s": steps} if steps else {})}
+            item_details.setdefault(iid, {}).setdefault("fix", []).append(fix)
+            lit = by_item[iid].setdefault("c", {})
+            for slug, pts in rows.items():
+                n = sum(1 for p in pts if not steps or p[2] in steps)
+                if n:
+                    lit[slug] = lit.get(slug, 0) + n
+            placed.add(iid)
+    print("  quest items placed on fixed points:", len(placed))
 
     # ARC robots
     def by_name(english):

@@ -186,3 +186,6 @@ body[data-kind] .card:not(.lit) { opacity: .46; }
   .sel .x { top: 1px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+.stamp.fixed { color: #1c7a4a; } .stamp.quest { color: #1f7f74; } .stamp.hot { color: #96690a; }
+.status { top: 14px; bottom: auto; white-space: normal; text-align: center; max-width: min(620px, calc(100% - 40px)); width: max-content; }
+@media (max-width: 760px) { .status { width: calc(100% - 40px); } }

@@ -16,7 +16,7 @@ The interface is available in **Russian, Polish and English**. Open it from the 
 | **Blueprint** | Every map where it can drop | Matching containers | Conditions, player reports, what it unlocks |
 | **Key** | The map with the door it opens | The door | Where the key drops |
 
-Every point carries a confidence label: *exactly here*, *matching container*, *dropped by robot* or *player reports*. Loot in the game is largely random, so the guide says so instead of pretending otherwise.
+Every point carries a confidence label: *exactly here*, *fixed spot*, *quest point*, *dense area*, *matching container*, *dropped by robot* or *player reports*. Loot in the game is largely random, so for random items the map circles the densest areas of matching containers and says there is no exact spot. The full container list stays one click away in the legend.
 
 ## How it is built
 

@@ -59,6 +59,7 @@
   var nameOf = function (kind, id) { return NAME(group(kind), id); };
   var DET = function (g) { return FAR.details[g] || {}; };
   var hasPts = function (l) { return l.pts.length; };
+  var isOff = function (l) { return l.key in S.off ? !!S.off[l.key] : !!l.hide; };
   var icon = function (kind, id) { return kind === 'arc' ? 'img/arcs/' + id + '.webp' : 'img/items/' + id + '.webp'; };
   var LI = function () { return LANGS.indexOf(S.lang); };
   var hide = 'onerror="this.style.visibility=\'hidden\'"';
@@ -169,7 +170,8 @@
     popup.remove();
     var mode = S.kind === 'quest' ? 'route' : null;
     layerSet.forEach(function (l, li) {
-      if (S.off[l.key]) return;
+      if (isOff(l)) return;
+      if (l.ring) L.circle(l.ring.c, { radius: l.ring.r, color: l.color, weight: 2, dashArray: '6 6', fillColor: l.color, fillOpacity: .12, interactive: false }).addTo(overlay);
       if (l.lines) l.lines.forEach(function (pts) {
         L.polyline(pts, { color: '#2fa594', weight: 3, dashArray: '2 7', lineCap: 'round', interactive: false }).addTo(overlay);
       });
@@ -182,6 +184,10 @@
         });
         overlay.addLayer(g);
       }
+    });
+    layerSet.forEach(function (l, li) {
+      if (!l.ring || isOff(l)) return;
+      overlay.addLayer(new Glyph(l.ring.c, { radius: 10, r0: 10, color: '#15130e', weight: 1.4, fillColor: l.color, fillOpacity: 1, glyph: 'dot', label: l.ring.n, bubblingMouseEvents: false, meta: { l: li } }));
     });
     return mode;
   }
@@ -213,10 +219,42 @@
     return out;
   }
 
+  var TREES = { lemon: 1, apricot: 1, olives: 1 };
+  var HOT_R = 16, HOT_MAX = 3, HOT_MIN = 4, HOT_COLORS = ['#e2a21a', '#7fc6e6', '#a6d36b'];
+
+  function hotSpots(all) {
+    var left = all.slice(), out = [];
+    var near = function (a, b, d) { return a.f === b.f && (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) <= d * d; };
+    while (out.length < HOT_MAX && left.length >= HOT_MIN) {
+      var best = null, bestN = 0;
+      left.forEach(function (p) {
+        var n = 0;
+        for (var i = 0; i < left.length; i++) if (near(p, left[i], HOT_R)) n++;
+        if (n > bestN) { bestN = n; best = p; }
+      });
+      if (bestN < HOT_MIN) break;
+      var group = left.filter(function (q) { return near(best, q, HOT_R); });
+      var cx = group.reduce(function (s, q) { return s + q.x; }, 0) / group.length;
+      var cy = group.reduce(function (s, q) { return s + q.y; }, 0) / group.length;
+      var mid = { x: cx, y: cy, f: best.f };
+      out.push({ x: cx, y: cy, pts: group });
+      left = left.filter(function (q) { return !near(mid, q, HOT_R * 2); });
+    }
+    return out;
+  }
+
   function itemLayers(md, D, id, wf) {
     var ls = [], i = 0;
     if (md.K[id]) ls.push({ key: 'k', label: U('conf_exact'), glyph: 'diamond', color: '#ffffff', r: 6, conf: 'exact', pts: flatPoints(md.K[id], wf) });
-    if (md.N[id]) ls.push({ key: 'n', label: nameOf('item', id), glyph: 'tri', color: '#8fd16b', r: 4.5, conf: 'exact', pts: flatPoints(md.N[id], wf) });
+    if (md.N[id]) ls.push({ key: 'n', label: nameOf('item', id), glyph: 'tri', color: '#8fd16b', r: 4.5, conf: 'fixed', note: TREES[id] ? U('tree_note') : '', pts: flatPoints(md.N[id], wf) });
+    (D.fix || []).forEach(function (q) {
+      var text = ((T().text.quest || {})[q.q] || {}).o || [];
+      var pts = (md.Q[q.q] || []).filter(function (p) { return (wf === null || p[4] === wf) && (!q.s || q.s.indexOf(p[2]) >= 0); }).map(function (p) {
+        return { x: p[0], y: p[1], f: p[4], o: p[2], t: NAME('quest', q.q), s: p[2] === null || p[2] === undefined ? '' : (text[p[2]] || '') };
+      });
+      var oneStep = pts.length > 1 && pts.every(function (p) { return p.o === pts[0].o; });
+      if (pts.length) ls.push({ key: 'q:' + q.q, label: NAME('quest', q.q), glyph: 'diamond', color: '#2fa594', stroke: '#fff', r: 8, conf: 'quest', note: oneStep ? U('any_of_n').replace('{n}', pts.length) : '', pts: pts });
+    });
     (D.cont || []).forEach(function (c) {
       var raw = md.C[c.s];
       if (!raw) return;
@@ -226,6 +264,20 @@
     (D.drop || []).forEach(function (a) {
       if (md.A[a]) ls.push({ key: 'a:' + a, label: NAME('arc', a), glyph: 'tri', color: '#d9512c', stroke: '#fff4', r: 5, conf: 'drop', pts: arcPoints(md, a, wf) });
     });
+    var conts = ls.filter(function (l) { return l.conf === 'cont'; });
+    if (ls.some(function (l) { return l.conf === 'quest' || l.conf === 'fixed' || l.conf === 'exact'; })) {
+      conts.forEach(function (l) { l.hide = true; });
+    } else {
+      var pool = [];
+      (D.cont || []).forEach(function (c) { if (!(c.ev && c.ev.length) && md.C[c.s]) pool = pool.concat(flatPoints(md.C[c.s], wf)); });
+      var hot = hotSpots(pool);
+      if (hot.length) {
+        conts.forEach(function (l) { l.hide = true; });
+        ls = hot.map(function (h, k) {
+          return { key: 'h:' + k, label: U('hot_n').replace('{n}', k + 1), glyph: 'dot', color: HOT_COLORS[k], stroke: '#fff', r: 5, conf: 'hot', note: U('hot_note').replace('{n}', h.pts.length), pts: h.pts, ring: { c: [h.y, h.x], r: HOT_R * 1.2, n: String(k + 1) } };
+        }).concat(ls);
+      }
+    }
     (D.best || []).forEach(function (b, n) {
       if (b.m === S.map && md.B[b.a]) ls.push({ key: 'b:' + b.a, label: NAME('area', S.map + '/' + b.a), glyph: 'diamond', color: '#e2a21a', stroke: '#fff', r: 7, conf: 'cont', note: U('best'), pts: [{ x: md.B[b.a][0], y: md.B[b.a][1], f: 0 }] });
     });
@@ -285,11 +337,14 @@
     var box = $('#legend');
     var shown = layerSet.filter(function (l) { return l.pts.length; });
     if (shown.length < 2 || S.kind === 'quest') { box.hidden = true; box.innerHTML = ''; return; }
+    var rest = shown.filter(function (l) { return l.hide; }), restOn = rest.some(function (l) { return !isOff(l); });
+    var rows = shown.filter(function (l) { return !l.hide; });
+    if (rest.length) rows = rows.concat([{ key: '__conts', label: U('all_conts'), glyph: 'dot', color: '#b7b2a6', hide: !restOn, pts: { length: rest.reduce(function (s, l) { return s + l.pts.length; }, 0) } }], restOn ? rest : []);
     box.hidden = false;
-    box.innerHTML = '<h3><span>' + esc(U('legend')) + '</span><button type="button" data-all="1">' + esc(U(shown.some(function (l) { return !S.off[l.key]; }) ? 'layer_none' : 'layer_all')) + '</button></h3>' +
-      shown.map(function (l) {
+    box.innerHTML = '<h3><span>' + esc(U('legend')) + '</span><button type="button" data-all="1">' + esc(U(shown.some(function (l) { return !isOff(l); }) ? 'layer_none' : 'layer_all')) + '</button></h3>' +
+      rows.map(function (l) {
         var shape = l.glyph === 'diamond' ? 'square' : l.glyph === 'tri' ? 'tri' : '';
-        return '<label><input type="checkbox" data-key="' + esc(l.key) + '"' + (S.off[l.key] ? '' : ' checked') + '><i class="swatch ' + shape + '" style="background:' + l.color + '"></i><span>' + esc(l.label) + '</span><small>' + l.pts.length + '</small></label>';
+        return '<label><input type="checkbox" data-key="' + esc(l.key) + '"' + (isOff(l) ? '' : ' checked') + '><i class="swatch ' + shape + '" style="background:' + l.color + '"></i><span>' + esc(l.label) + '</span><small>' + l.pts.length + '</small></label>';
       }).join('');
   }
 
@@ -330,6 +385,9 @@
       box.hidden = false;
       return;
     }
+    var itemish = S.kind && S.kind !== 'quest' && S.kind !== 'arc' && S.kind !== 'key' && FAR.mapdata[S.map], sel = layerSet.filter(hasPts);
+    if (itemish && sel.some(function (l) { return l.conf === 'hot'; })) { box.textContent = U('status_random'); box.hidden = false; return; }
+    if (itemish && sel.some(function (l) { return l.conf === 'quest' || l.conf === 'fixed'; })) { box.textContent = U('status_fixed'); box.hidden = false; return; }
     box.hidden = true;
   }
   function otherFloorHas() {
@@ -451,6 +509,7 @@
         return '<li><button type="button" class="linky" data-area="' + esc(b.m + '|' + b.a) + '">' + esc(NAME('area', b.m + '/' + b.a)) + '</button><em>' + esc(NAME('map', b.m)) + (zones ? ' · ' + esc(zones) : '') + '</em></li>';
       }).join('') + '</ul>');
     }
+    if (D.fix && D.fix.length) out += dc(U('fix_where'), '<span class="stamp quest">' + esc(U('conf_quest')) + '</span>' + chips(D.fix.map(function (q) { return chipQuest(q.q); })));
     if (D.cont && D.cont.length) {
       out += dc(U('cont'), '<ul class="rows">' + D.cont.map(function (c) {
         var ev = (c.ev || []).map(function (x) { return NAME('cond', x); }).join(', ');
@@ -741,8 +800,8 @@
     if (t.closest && t.closest('[data-reset]')) { fit(); return; }
     var all = t.closest && t.closest('[data-all]');
     if (all) {
-      var anyOn = layerSet.some(function (l) { return !S.off[l.key]; });
-      layerSet.forEach(function (l) { if (anyOn) S.off[l.key] = 1; else delete S.off[l.key]; });
+      var anyOn = layerSet.some(function (l) { return !isOff(l); });
+      layerSet.forEach(function (l) { S.off[l.key] = anyOn ? 1 : 0; });
       drawLayers(); paintLegend();
       return;
     }
@@ -751,7 +810,8 @@
   $('#legend').addEventListener('change', function (ev) {
     var k = ev.target.dataset.key;
     if (!k) return;
-    if (ev.target.checked) delete S.off[k]; else S.off[k] = 1;
+    if (k === '__conts') { layerSet.forEach(function (l) { if (l.hide) S.off[l.key] = ev.target.checked ? 0 : 1; }); drawLayers(); paintLegend(); return; }
+    S.off[k] = ev.target.checked ? 0 : 1;
     drawLayers();
     paintLegend();
   });
