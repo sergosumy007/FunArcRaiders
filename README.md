@@ -1,6 +1,6 @@
 # FunArcRaiders
 
-An interactive field guide for the extraction shooter **ARC Raiders**: pick an item, a quest, an ARC robot or a blueprint and see exactly which maps it belongs to and where.
+An interactive field guide for the extraction shooter **ARC Raiders**: pick an item, a quest, an ARC robot, a blueprint or a key and see exactly which maps it belongs to and where.
 
 **Live site: https://sergosumy007.github.io/FunArcRaiders/**
 
@@ -14,6 +14,7 @@ The interface is available in **Russian, Polish and English**. Open it from the 
 | **Quest** | Every map it takes place on | Numbered steps and the route between them, with required gear above the map | Step-by-step walkthrough and rewards |
 | **ARC robot** | Every map where it spawns | Spawn points and patrol behaviour | Weak points, tactics, suitable weapons and loot |
 | **Blueprint** | Every map where it can drop | Matching containers | Conditions, player reports, what it unlocks |
+| **Key** | The map with the door it opens | The door | Where the key drops |
 
 Every point carries a confidence label: *exactly here*, *matching container*, *dropped by robot* or *player reports*. Loot in the game is largely random, so the guide says so instead of pretending otherwise.
 

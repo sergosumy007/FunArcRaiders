@@ -1,6 +1,7 @@
 """Turn pipeline/cache into the static site in docs/.
 
 Run after fetch.py and fetch_names.py:  py -3.12 pipeline/build.py
+Add --no-tiles to rebuild only the data when map images did not change.
 The build stops with an error when a source changed shape, so a game patch
 cannot silently produce an empty or misaligned site.
 """
@@ -46,6 +47,8 @@ MF_SUBCAT = {"arc_probe": "arc-probe", "arc_courier": "arc-courier", "wasp_husk"
 MF_NAME_ALIAS = {"car-trunk": "car", "kitchen-cupboard": "kitchen-cabinet", "kitchen-counter": "kitchen-cabinet", "locker": "work-lockers", "transformer": "transformer",
                  "tool-trolley": "tool-trolley", "medical-waste-bin": "medical-waste-bin", "office-desk": "office-desk", "bus": "bus", "fridge": "fridge"}
 NATURE_ALIAS = {"lemon": "lemons", "olives": "olives", "prickly_pear": "prickly_pear"}
+# Keys whose door has no point in any source; the item text names the map.
+KEY_MAP_ONLY = {"seed_vault_box_key": "stella-montis", "emperor_gateway_conduit": "pendola-pass", "flushing_terminal_key": "the-spaceport"}
 HINTS = [("map", "stella-montis", None, ["Афелий", "Дедлайн", "Импульсная мина", "Зажигалка", "Самонаводящаяся граната", "Газовая мина"], "t.me/duckraiders/1415"),
          ("cond", "harvester", "puzzle", ["Уравнитель", "Юпитер"], "t.me/duckraiders/1417"),
          ("cond", "electromagnetic-storm", None, ["Крюк с защёлкой", "Токовая катушка"], "t.me/duckraiders/1420"),
@@ -257,6 +260,11 @@ def build_tiles():
     return native
 
 
+def read_native():
+    tiles = os.path.join(DOCS, "tiles")
+    return {slug: max(int(z) for z in os.listdir(os.path.join(tiles, slug if slug != "stella-montis" else "stella-montis-top")) if z.isdigit()) for slug, _ in MAPS}
+
+
 def build_icons(ids):
     out = os.path.join(DOCS, "img", "items")
     os.makedirs(out, exist_ok=True)
@@ -374,7 +382,7 @@ def main():
                 for a in enemies.get("escort") or []:
                     layer["A"][canon_arc(a)] += [x, y, f, (mv << 1) | 1]
             for req in p.get("requiredItems") or []:
-                if req.get("role") == "key" and req.get("itemId") in item_ids:
+                if req.get("role") in ("key", "code") and req.get("itemId") in item_ids:
                     layer["K"][req["itemId"]] += [x, y, f]
             links = p.get("questLinks") or []
             if kind == "quest" or links:
@@ -406,6 +414,8 @@ def main():
                     mf_slug_used[name] += 1
                 elif not name:
                     unmatched["mf:" + (inst or sub)] += 1
+            elif cat == "events" and sub == "bunker":
+                layer["K"]["hidden_bunker_key"] += [x, y, f]
             elif cat == "quests":
                 qid = quest_by_slug.get(sub)
                 if qid and not any(r for r in layer["Q"].get(qid, []) if r[2] is not None):
@@ -510,6 +520,9 @@ def main():
                 det["hints"] = 1
         if counts:
             entry["c"] = dict(counts)
+        if x.get("type") == "Key" or iid in KEY_MAP_ONLY:
+            doors = {slug: len(per_map[slug]["layer"]["K"][iid]) // 3 for slug, _ in MAPS if per_map[slug]["layer"]["K"].get(iid)}
+            entry["d"] = doors or ({KEY_MAP_ONLY[iid]: -1} if iid in KEY_MAP_ONLY else {})
         core_items.append(entry)
         if det:
             item_details[iid] = det
@@ -587,8 +600,12 @@ def main():
     if os.path.isdir(DATA):
         shutil.rmtree(DATA)
     print("building tiles and icons")
-    native = build_tiles()
+    native = read_native() if "--no-tiles" in sys.argv else build_tiles()
     build_icons([x["id"] for x in items])
+    for aid in arcs_text:
+        placeholder = os.path.join(DOCS, "img", "arcs", aid + ".webp")
+        if not os.path.exists(placeholder):
+            Image.new("RGBA", (128, 128), (0, 0, 0, 0)).save(placeholder, "WEBP", quality=78)
     core_maps = [{"id": s, "native": native[s], **({"floors": ["top", "bottom"]} if s == "stella-montis" else {})} for s, _ in MAPS]
     built = datetime.date.today().isoformat()
     size = js("core.js", {"built": built, "maps": core_maps, "items": core_items, "quests": core_quests, "arcs": core_arcs}, "window.FAR={core:null,i18n:{},details:{},mapdata:{}};FAR.core")

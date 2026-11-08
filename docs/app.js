@@ -2,7 +2,7 @@
   'use strict';
 
   var LANGS = ['ru', 'pl', 'en'];
-  var KINDS = ['item', 'quest', 'arc', 'bp'];
+  var KINDS = ['item', 'quest', 'arc', 'bp', 'key'];
   var BOUNDS = [[0, 0], [1000, 1000]];
   var PAGE = 70;
   var FAR = window.FAR;
@@ -43,17 +43,22 @@
     item: CORE.items.filter(function (x) { return !x.bp; }),
     bp: CORE.items.filter(function (x) { return x.bp; }),
     quest: CORE.quests,
-    arc: CORE.arcs
+    arc: CORE.arcs,
+    key: CORE.items.filter(function (x) { return x.d; }).map(function (x) { return { id: x.id, t: x.t, r: x.r, c: x.d }; })
   };
   var BY = {};
   CORE.items.forEach(function (x) { BY['item:' + x.id] = x; BY['bp:' + x.id] = x; });
   CORE.quests.forEach(function (x) { BY['quest:' + x.id] = x; });
   CORE.arcs.forEach(function (x) { BY['arc:' + x.id] = x; });
+  ENT.key.forEach(function (x) { BY['key:' + x.id] = x; });
 
   var T = function () { return FAR.i18n[S.lang]; };
   var U = function (k) { return T().ui[k] || k; };
-  var NAME = function (group, id) { return T().names[group][id] || id; };
-  var nameOf = function (kind, id) { return NAME(kind === 'bp' ? 'item' : kind, id); };
+  var NAME = function (group, id) { return T().names[group][id] || String(id).split('/').pop(); };
+  var group = function (kind) { return kind === 'bp' || kind === 'key' ? 'item' : kind; };
+  var nameOf = function (kind, id) { return NAME(group(kind), id); };
+  var DET = function (g) { return FAR.details[g] || {}; };
+  var hasPts = function (l) { return l.pts.length; };
   var icon = function (kind, id) { return kind === 'arc' ? 'img/arcs/' + id + '.webp' : 'img/items/' + id + '.webp'; };
   var LI = function () { return LANGS.indexOf(S.lang); };
   var hide = 'onerror="this.style.visibility=\'hidden\'"';
@@ -85,11 +90,12 @@
   });
   var Glyph = L.CircleMarker.extend({ _updatePath: function () { this._renderer._updateGlyph(this); } });
 
-  var CRS = L.extend({}, L.CRS.Simple, { transformation: new L.Transformation(1, 0, 1, 0) });
+  // Source coordinates run bottom-up (lat 1000 is the top edge of the image), tile rows top-down.
+  var CRS = L.extend({}, L.CRS.Simple, { transformation: new L.Transformation(1, 0, -1, 1000) });
   var map = L.map('map', {
     crs: CRS, zoomControl: false, attributionControl: false, preferCanvas: true,
-    minZoom: -2, maxZoom: 5, zoomSnap: 0.25, zoomDelta: 0.5, wheelPxPerZoomLevel: 110,
-    maxBoundsViscosity: 0.85, renderer: L.canvas({ padding: 0.3, tolerance: 4 })
+    minZoom: -5, maxZoom: 5, zoomSnap: 0, zoomDelta: 0.5, wheelPxPerZoomLevel: 110,
+    maxBoundsViscosity: 1, renderer: L.canvas({ padding: 0.3, tolerance: 4 })
   });
   var tiles = null;
   var overlay = L.featureGroup().addTo(map);
@@ -98,24 +104,46 @@
   var layerSet = [];
   var labelLayers = [];
 
+  // getBoundsZoom clamps to minZoom, so the floor has to be lifted before measuring.
+  function floorZoom(box) {
+    map.options.minZoom = -5;
+    map.options.minZoom = map.getBoundsZoom(box, false);
+  }
+
+  // The whole map in view, held inside the image so zooming can never land on empty black.
+  var autoFit = true, fitting = false;
   function fit() {
     var box = L.latLngBounds(BOUNDS);
-    map.invalidateSize();
-    var z = map.getBoundsZoom(box, false);
-    map.setMinZoom(Math.floor(z * 4) / 4 - 0.25);
-    map.setMaxBounds(box.pad(0.25));
+    var size = map.invalidateSize({ pan: false }).getSize();
+    if (!size.x || !size.y) return;
+    fitting = true;
+    floorZoom(box);
+    map.setMaxBounds(box);
     map.fitBounds(box, { animate: false });
+    fitting = false;
+    autoFit = true;
   }
+
+  // Until the reader moves the map it keeps filling the panel at any window size.
+  function boxChanged() {
+    if (!S.map || !tiles) { map.invalidateSize(); return; }
+    if (autoFit) { fit(); return; }
+    map.invalidateSize();
+    floorZoom(L.latLngBounds(BOUNDS));
+    if (map.getZoom() < map.getMinZoom()) map.setZoom(map.getMinZoom(), { animate: false });
+  }
+  map.on('zoomstart dragstart', function () { if (!fitting) autoFit = false; });
 
   function mapInfo(id) { return CORE.maps.filter(function (m) { return m.id === id; })[0]; }
 
   function setTiles() {
     var info = mapInfo(S.map);
     var dir = info.floors ? S.map + '-' + S.floor : S.map;
+    $('#backdrop').style.backgroundImage = 'url(img/maps/' + S.map + '.webp)';
     if (tiles) map.removeLayer(tiles);
     tiles = L.tileLayer('tiles/' + dir + '/{z}/{x}/{y}.webp', {
       tileSize: 512, minNativeZoom: 0, maxNativeZoom: info.native, noWrap: true,
-      bounds: BOUNDS, keepBuffer: 3, updateWhenZooming: false, minZoom: -2, maxZoom: 5
+      bounds: BOUNDS, keepBuffer: 3, updateWhenZooming: false, minZoom: -5, maxZoom: 5
     }).addTo(map);
   }
 
@@ -238,11 +266,17 @@
     return pts.length ? [{ key: 'a', label: nameOf('arc', id), glyph: 'tri', color: '#d9512c', stroke: '#eadfc6', r: 6.5, pts: pts }] : [];
   }
 
+  function keyLayers(md, id, wf) {
+    var pts = flatPoints(md.K[id], wf);
+    return pts.length ? [{ key: 'd', label: U('door'), glyph: 'diamond', color: '#b98ae0', stroke: '#ffffff', r: 8, conf: 'exact', pts: pts }] : [];
+  }
+
   function buildLayers(md) {
     var info = mapInfo(S.map), wf = info.floors ? (S.floor === 'top' ? 0 : 1) : null, id = S.id;
     if (S.kind === 'quest') return questLayers(md, id, wf);
     if (S.kind === 'arc') return arcLayers(md, id, wf);
-    return itemLayers(md, FAR.details.items[id] || {}, id, wf);
+    if (S.kind === 'key') return keyLayers(md, id, wf);
+    return itemLayers(md, DET('items')[id] || {}, id, wf);
   }
 
   /* ---------- painting ---------- */
@@ -262,7 +296,7 @@
   function paintGear() {
     var box = $('#gear');
     if (S.kind !== 'quest' || !S.map || !lit(S.map)) { box.hidden = true; return; }
-    var D = FAR.details.quests[S.id] || {};
+    var D = DET('quests')[S.id] || {};
     var chip = function (r) { return '<button type="button" class="chip" data-go="item:' + esc(r.i) + '"><img src="' + icon('item', r.i) + '" alt="" ' + hide + '>' + esc(NAME('item', r.i)) + (r.q > 1 ? ' <b>×' + r.q + '</b>' : '') + '</button>'; };
     var bring = (D.req || []).filter(function (r) { return !r.qi; }).concat(D.tools || []);
     var found = (D.req || []).filter(function (r) { return r.qi; });
@@ -283,7 +317,7 @@
       var on = lit(m.id), e = S.kind && BY[S.kind + ':' + S.id], cnt = on ? e.c[m.id] : 0;
       return '<li><button type="button" class="card' + (on ? ' lit' : '') + (S.map === m.id ? ' open' : '') + '" data-map="' + m.id + '" style="--i:' + (on ? n++ : 0) + '" aria-pressed="' + (S.map === m.id) + '">' +
         '<img src="img/maps/' + m.id + '.webp" alt=""><span><span class="nm">' + esc(NAME('map', m.id)) + '</span>' +
-        (on ? '<span class="cnt">' + cnt + '</span>' : '') + '</span><i class="bulb"></i></button></li>';
+        (cnt > 0 ? '<span class="cnt">' + cnt + '</span>' : '') + '</span><i class="bulb"></i></button></li>';
     }).join('');
   }
 
@@ -291,7 +325,19 @@
     var box = $('#status');
     if (S.kind && !anyLit()) { box.textContent = U('no_map'); box.hidden = false; return; }
     if (S.kind && (!S.map || !lit(S.map))) { box.textContent = U('pick_map'); box.hidden = false; return; }
+    if (S.kind && FAR.mapdata[S.map] && !layerSet.some(hasPts)) {
+      box.textContent = U(mapInfo(S.map).floors && otherFloorHas() ? 'no_points_floor' : S.kind === 'key' ? 'door_no_point' : 'no_points');
+      box.hidden = false;
+      return;
+    }
     box.hidden = true;
+  }
+  function otherFloorHas() {
+    var f = S.floor;
+    S.floor = f === 'top' ? 'bottom' : 'top';
+    var yes = buildLayers(FAR.mapdata[S.map]).some(hasPts);
+    S.floor = f;
+    return yes;
   }
   function anyLit() {
     var e = S.kind && BY[S.kind + ':' + S.id];
@@ -340,14 +386,20 @@
     s.classList.add('go');
   }
 
-  var token = 0;
-  function paintMap(newBase) {
+  // A request for new tiles survives a newer repaint that overtakes it while the data loads.
+  var token = 0, baseDue = false;
+  function paintMap(newBase, seekFloor) {
     var mine = ++token;
+    baseDue = baseDue || !!newBase;
     if (!S.map) { paintStatus(); return Promise.resolve(); }
     return need('data/map.' + S.map + '.js').then(function () {
       if (mine !== token) return;
       var md = FAR.mapdata[S.map];
-      if (newBase) { setTiles(); paintLabels(); sweep(); }
+      if (seekFloor && S.kind === 'key' && lit(S.map) && mapInfo(S.map).floors) {
+        var here = flatPoints(md.K[S.id], S.floor === 'top' ? 0 : 1).length;
+        if (!here && flatPoints(md.K[S.id], null).length) { S.floor = S.floor === 'top' ? 'bottom' : 'top'; baseDue = true; }
+      }
+      if (baseDue) { baseDue = false; setTiles(); paintLabels(); sweep(); }
       layerSet = (S.kind && lit(S.map)) ? buildLayers(md) : [];
       drawLayers();
       paintLegend();
@@ -366,7 +418,7 @@
     paintCards();
     writeHash();
     setPane('map');
-    return paintMap(true).then(function () { if (changed) fit(); });
+    return paintMap(true, true).then(function () { if (changed) fit(); });
   }
 
   /* ---------- dossier ---------- */
@@ -457,13 +509,25 @@
     return html;
   }
 
+  function dossierKey(e, D) {
+    var html = head(icon('item', e.id), NAME('item', e.id), typeMeta(e), e.r);
+    var desc = (T().text.item || {})[e.id];
+    if (desc) html += '<p>' + esc(desc) + '</p>';
+    var maps = Object.keys(e.c || {});
+    html += dc(U('door_where'), maps.length ? '<ul class="rows">' + maps.map(function (m) {
+      return '<li><button type="button" class="linky" data-map="' + esc(m) + '">' + esc(NAME('map', m)) + '</button>' + (e.c[m] < 0 ? '<em>' + esc(U('door_no_point')) + '</em>' : '') + '</li>';
+    }).join('') + '</ul>' : '<p style="margin:0">' + esc(U('no_door')) + '</p>');
+    return html + whereHTML(D);
+  }
+
   function paintDossier() {
     var box = $('#dossier');
     if (!S.kind) { box.innerHTML = ''; return; }
     var e = BY[S.kind + ':' + S.id], html, D;
-    if (S.kind === 'quest') { D = FAR.details.quests[e.id] || {}; html = dossierQuest(e, D); }
-    else if (S.kind === 'arc') { D = FAR.details.arcs[e.id] || {}; html = dossierArc(e, D); }
-    else { D = FAR.details.items[e.id] || {}; html = dossierItem(e, D); }
+    if (S.kind === 'quest') { D = DET('quests')[e.id] || {}; html = dossierQuest(e, D); }
+    else if (S.kind === 'arc') { D = DET('arcs')[e.id] || {}; html = dossierArc(e, D); }
+    else if (S.kind === 'key') { D = DET('items')[e.id] || {}; html = dossierKey(e, D); }
+    else { D = DET('items')[e.id] || {}; html = dossierItem(e, D); }
     box.innerHTML = '<article class="sheet">' + html + '</article>';
     box.scrollTop = 0;
   }
@@ -476,7 +540,7 @@
       var coll = window.Intl && Intl.Collator ? new Intl.Collator(S.lang) : null;
       INDEX[k] = ENT[k].map(function (e) {
         var n = nameOf(k, e.id);
-        return { e: e, n: n, hay: fold(n + ' ' + ((T().en || {})[(k === 'bp' ? 'item' : k) + ':' + e.id] || '')), m: e.c && Object.keys(e.c).length ? 0 : 1 };
+        return { e: e, n: n, hay: fold(n + ' ' + ((T().en || {})[group(k) + ':' + e.id] || '')), m: e.c && Object.keys(e.c).length ? 0 : 1 };
       }).sort(function (a, b) { return a.m - b.m || (coll ? coll.compare(a.n, b.n) : a.n.localeCompare(b.n)); });
     });
   }
@@ -484,6 +548,7 @@
   function subOf(k, e) {
     if (k === 'quest') return e.tr || '';
     if (k === 'arc') return T().threats[e.th] || '';
+    if (k === 'key') return Object.keys(e.c || {}).map(function (m) { return NAME('map', m); }).join(', ');
     return T().types[e.t] || '';
   }
   function rowHTML(k, r) {
@@ -515,6 +580,7 @@
     openList = { el: el, root: root, kind: kind, rows: rows, done: 0, active: -1 };
     if (!rows.length) el.innerHTML = '<li class="note">' + esc(U('nothing')) + '</li>';
     moreRows();
+    el.style.maxHeight = Math.max(170, Math.min(440, window.innerHeight - el.getBoundingClientRect().top - 12)) + 'px';
     el.addEventListener('scroll', function () { if (el.scrollTop + el.clientHeight > el.scrollHeight - 200) moreRows(); });
     $('input', root).setAttribute('aria-expanded', 'true');
   }
@@ -592,7 +658,7 @@
       paintDossier();
       paintCards();
       paintStatus();
-      paintMap(false);
+      paintMap(false, true);
       writeHash();
       setPane(lit(S.map) ? 'map' : (anyLit() ? 'right' : 'left'));
     });
@@ -700,7 +766,8 @@
   $('#dossier').addEventListener('mouseleave', function () {
     overlay.eachLayer(function (m) { if (m.options && m.options.meta) m.setRadius(m.options.r0); });
   });
-  window.addEventListener('resize', function () { map.invalidateSize(); });
+  if (window.ResizeObserver) new ResizeObserver(boxChanged).observe($('#map'));
+  else window.addEventListener('resize', boxChanged);
   window.addEventListener('hashchange', function () {
     var h = readHash();
     if (h.lang && h.lang !== S.lang) setLang(h.lang);
@@ -716,7 +783,7 @@
     return nav.some(function (l) { return ['uk', 'be', 'kk'].indexOf(l) >= 0; }) ? 'ru' : 'en';
   }
 
-  FAR.api = { choose: choose, openMap: openMap, setLang: setLang, clear: clearSel, state: S, layers: function () { return layerSet; } };
+  FAR.api = { choose: choose, openMap: openMap, setLang: setLang, clear: clearSel, state: S, map: map, layers: function () { return layerSet; } };
 
   var boot = readHash();
   setLang(boot.lang || browserLang()).then(function () {
