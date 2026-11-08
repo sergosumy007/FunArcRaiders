@@ -1,0 +1,59 @@
+{
+ "ru": {
+  "tag":"Полевой справочник рейдера","unofficial":"Фанатский проект. Не связан с Embark Studios.",
+  "lang":"Язык","maps":"Карты","sources":"Источники данных",
+  "sel_item":"Предмет","sel_quest":"Задание","sel_arc":"Робот ARC","sel_bp":"Чертёж",
+  "ph_item":"Найти предмет","ph_quest":"Найти задание","ph_arc":"Найти робота","ph_bp":"Найти чертёж",
+  "clear":"Очистить","nothing":"Ничего не найдено","more":"Прокрути, чтобы увидеть ещё",
+  "hello_t":"Что ищем, рейдер?","hello":"Выбери предмет, задание, робота или чертёж слева. Подходящие карты загорятся справа.",
+  "pick_map":"Выбери подсвеченную карту справа","no_map":"На картах не встречается","no_here":"На этой карте этого нет",
+  "bring":"Взять с собой","found_in_quest":"Найдёшь по заданию","no_gear":"Особых предметов не требуется",
+  "where":"Где найти","best":"Лучшие районы","cont":"Контейнеры","drop":"Падает с роботов","reward":"Награда за задания","trader":"Продают торговцы","trials":"Награда за испытания","craft":"Крафт","unlocks":"Открывает","hints":"По отчётам игроков","only":"только при условии","anywhere":"В контейнерах на любой карте",
+  "steps":"Прохождение","desc":"Описание","giver":"Выдаёт","rewards":"Награды","prev":"Перед этим","next":"Дальше","video":"Видеогайд","route":"Маршрут по шагам","any_of":"любая из точек","order_unknown":"порядок шагов не указан",
+  "threat":"Угроза","weak":"Слабое место","tactic":"Как победить","weapons":"Оружие","gadgets":"Снаряжение","loot":"Лут","pen":"пробитие брони",
+  "conf_exact":"Точно здесь","conf_cont":"Подходящий контейнер","conf_drop":"Падает с робота","conf_hint":"По отчётам игроков",
+  "patrol":"патрулирует район","static":"стоит на месте","slots":"появляется в одной из точек","escort":"в сопровождении","lead":"основной",
+  "lower":"нижний уровень","locked":"за запертой дверью","needs":"нужно","floor_top":"Верхний этаж","floor_bottom":"Нижний этаж",
+  "step":"Шаг","legend":"Обозначения","points":"точек","layer_all":"Все","layer_none":"Снять все","loading":"Загрузка","data_date":"Данные от","reset":"Сбросить вид"
+ },
+ "pl": {
+  "tag":"Terenowy przewodnik rajdera","unofficial":"Projekt fanowski. Niezwiązany z Embark Studios.",
+  "lang":"Język","maps":"Mapy","sources":"Źródła danych",
+  "sel_item":"Przedmiot","sel_quest":"Zadanie","sel_arc":"Robot ARC","sel_bp":"Plan",
+  "ph_item":"Szukaj przedmiotu","ph_quest":"Szukaj zadania","ph_arc":"Szukaj robota","ph_bp":"Szukaj planu",
+  "clear":"Wyczyść","nothing":"Nic nie znaleziono","more":"Przewiń, aby zobaczyć więcej",
+  "hello_t":"Czego szukamy, rajderze?","hello":"Wybierz po lewej przedmiot, zadanie, robota lub plan. Pasujące mapy zaświecą się po prawej.",
+  "pick_map":"Wybierz podświetloną mapę po prawej","no_map":"Nie występuje na mapach","no_here":"Na tej mapie tego nie ma",
+  "bring":"Zabierz ze sobą","found_in_quest":"Znajdziesz w trakcie zadania","no_gear":"Nie są potrzebne specjalne przedmioty",
+  "where":"Gdzie znaleźć","best":"Najlepsze rejony","cont":"Pojemniki","drop":"Wypada z robotów","reward":"Nagroda za zadania","trader":"Sprzedają handlarze","trials":"Nagroda za próby","craft":"Wytwarzanie","unlocks":"Odblokowuje","hints":"Według zgłoszeń graczy","only":"tylko przy warunku","anywhere":"W pojemnikach na dowolnej mapie",
+  "steps":"Przejście","desc":"Opis","giver":"Zleca","rewards":"Nagrody","prev":"Wcześniej","next":"Dalej","video":"Poradnik wideo","route":"Trasa według kroków","any_of":"dowolny z punktów","order_unknown":"kolejność kroków nie jest podana",
+  "threat":"Zagrożenie","weak":"Słaby punkt","tactic":"Jak pokonać","weapons":"Broń","gadgets":"Wyposażenie","loot":"Łup","pen":"przebicie pancerza",
+  "conf_exact":"Dokładnie tutaj","conf_cont":"Odpowiedni pojemnik","conf_drop":"Wypada z robota","conf_hint":"Według zgłoszeń graczy",
+  "patrol":"patroluje rejon","static":"stoi w miejscu","slots":"pojawia się w jednym z punktów","escort":"w eskorcie","lead":"główny",
+  "lower":"niższy poziom","locked":"za zamkniętymi drzwiami","needs":"potrzeba","floor_top":"Górne piętro","floor_bottom":"Dolne piętro",
+  "step":"Krok","legend":"Legenda","points":"punktów","layer_all":"Wszystkie","layer_none":"Odznacz","loading":"Ładowanie","data_date":"Dane z","reset":"Resetuj widok"
+ },
+ "en": {
+  "tag":"Raider's field guide","unofficial":"Fan project. Not affiliated with Embark Studios.",
+  "lang":"Language","maps":"Maps","sources":"Data sources",
+  "sel_item":"Item","sel_quest":"Quest","sel_arc":"ARC robot","sel_bp":"Blueprint",
+  "ph_item":"Find an item","ph_quest":"Find a quest","ph_arc":"Find a robot","ph_bp":"Find a blueprint",
+  "clear":"Clear","nothing":"Nothing found","more":"Scroll for more",
+  "hello_t":"What are we looking for, Raider?","hello":"Pick an item, quest, robot or blueprint on the left. Matching maps light up on the right.",
+  "pick_map":"Choose a highlighted map on the right","no_map":"Not found on any map","no_here":"Not on this map",
+  "bring":"Bring with you","found_in_quest":"Found during the quest","no_gear":"No special items needed",
+  "where":"Where to find","best":"Best areas","cont":"Containers","drop":"Dropped by robots","reward":"Quest reward","trader":"Sold by traders","trials":"Trials reward","craft":"Crafting","unlocks":"Unlocks","hints":"Player reports","only":"only during","anywhere":"In containers on any map",
+  "steps":"Walkthrough","desc":"Description","giver":"Given by","rewards":"Rewards","prev":"Before this","next":"Next","video":"Video guide","route":"Route by step","any_of":"any of these points","order_unknown":"step order not specified",
+  "threat":"Threat","weak":"Weak point","tactic":"How to beat it","weapons":"Weapons","gadgets":"Gear","loot":"Loot","pen":"armour penetration",
+  "conf_exact":"Exactly here","conf_cont":"Matching container","conf_drop":"Dropped by robot","conf_hint":"Player reports",
+  "patrol":"patrols the area","static":"stays in place","slots":"spawns at one of these points","escort":"escort","lead":"main",
+  "lower":"lower level","locked":"behind a locked door","needs":"needs","floor_top":"Top floor","floor_bottom":"Bottom floor",
+  "step":"Step","legend":"Legend","points":"points","layer_all":"All","layer_none":"Clear","loading":"Loading","data_date":"Data from","reset":"Reset view"
+ },
+ "types": {
+  "Recyclable":["Вторсырьё","Surowce wtórne","Recyclable"],"Outpost Furniture":["Мебель форпоста","Meble posterunku","Outpost Furniture"],"Design":["Дизайн","Wzór","Design"],"Trinket":["Безделушка","Drobiazg","Trinket"],"Blueprint":["Чертёж","Plan","Blueprint"],"Quick Use":["Быстрое использование","Szybkie użycie","Quick Use"],"Topside Material":["Материал поверхности","Materiał z powierzchni","Topside Material"],"Key":["Ключ","Klucz","Key"],"Modification":["Модификация","Modyfikacja","Modification"],"Assault Rifle":["Штурмовая винтовка","Karabin szturmowy","Assault Rifle"],"Battle Rifle":["Боевая винтовка","Karabin bojowy","Battle Rifle"],"Special":["Особое","Specjalne","Special"],"Pistol":["Пистолет","Pistolet","Pistol"],"Sniper Rifle":["Снайперская винтовка","Karabin snajperski","Sniper Rifle"],"SMG":["Пистолет-пулемёт","Pistolet maszynowy","SMG"],"Augment":["Аугмент","Augment","Augment"],"Research":["Исследование","Badanie","Research"],"Stencil":["Трафарет","Szablon","Stencil"],"Shotgun":["Дробовик","Strzelba","Shotgun"],"Refined Material":["Обработанный материал","Materiał przetworzony","Refined Material"],"Nature":["Природа","Natura","Nature"],"Hand Cannon":["Ручная пушка","Ręczne działo","Hand Cannon"],"Basic Material":["Базовый материал","Materiał podstawowy","Basic Material"],"Misc":["Разное","Różne","Misc"],"Ammunition":["Боеприпасы","Amunicja","Ammunition"],"Outpost Room":["Комната форпоста","Pokój posterunku","Outpost Room"],"LMG":["Ручной пулемёт","Lekki karabin maszynowy","LMG"],"Shield":["Щит","Tarcza","Shield"]
+ },
+ "rarity": {"Common":["Обычное","Pospolity","Common"],"Uncommon":["Необычное","Niepospolity","Uncommon"],"Rare":["Редкое","Rzadki","Rare"],"Epic":["Эпическое","Epicki","Epic"],"Legendary":["Легендарное","Legendarny","Legendary"]},
+ "threats": {"neutral":["Безопасный","Bezpieczny","Safe"],"low":["Низкая","Niskie","Low"],"moderate":["Умеренная","Umiarkowane","Moderate"],"high":["Высокая","Wysokie","High"],"critical":["Критическая","Krytyczne","Critical"],"extreme":["Экстремальная","Ekstremalne","Extreme"]},
+ "zones": {"Residential":["Жилые","Mieszkalne","Residential"],"ARC":["ARC","ARC","ARC"],"Commercial":["Торговые","Handlowe","Commercial"],"Exodus":["Исход","Exodus","Exodus"],"Security":["Безопасность","Bezpieczeństwo","Security"],"Nature":["Природные","Naturalne","Nature"],"Mechanical":["Механические","Mechaniczne","Mechanical"],"Industrial":["Промышленные","Przemysłowe","Industrial"],"Electrical":["Электрические","Elektryczne","Electrical"],"Old World":["Старый мир","Stary Świat","Old World"],"Medical":["Медицинские","Medyczne","Medical"],"Technological":["Технологические","Technologiczne","Technological"],"Raider":["Рейдеры","Rajderzy","Raider"]}
+}

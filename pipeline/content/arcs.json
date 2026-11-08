@@ -1,0 +1,789 @@
+{
+ "wasp": {
+  "threat": "moderate",
+  "need": 1,
+  "gear": [
+   "Wolfpack"
+  ],
+  "weak": {
+   "ru": "Двигатели",
+   "pl": "Silniki",
+   "en": "Thrusters"
+  },
+  "tactic": {
+   "ru": [
+    "Стреляй по двигателям: без них Оса теряет устойчивость и падает.",
+    "Обычно летает в связке с Шершнем, поэтому сначала займи укрытие."
+   ],
+   "pl": [
+    "Strzelaj w silniki: bez nich Osa traci stabilność i spada.",
+    "Zwykle lata razem z Szerszeniem, więc najpierw zajmij osłonę."
+   ],
+   "en": [
+    "Shoot the thrusters: without them the Wasp destabilises and falls.",
+    "It usually flies with a Hornet, so get to cover first."
+   ]
+  }
+ },
+ "hornet": {
+  "threat": "high",
+  "need": 2,
+  "gear": [
+   "Wolfpack"
+  ],
+  "weak": {
+   "ru": "Задние двигатели",
+   "pl": "Tylne silniki",
+   "en": "Rear thrusters"
+  },
+  "tactic": {
+   "ru": [
+    "Перед выстрелом он секунду наводит красный лазер: в этот момент делай перекат.",
+    "Заходи сзади и бей по двигателям, спереди роторы бронированы."
+   ],
+   "pl": [
+    "Przed strzałem przez sekundę celuje czerwonym laserem: wtedy zrób unik.",
+    "Zajdź go od tyłu i strzelaj w silniki, przednie wirniki są opancerzone."
+   ],
+   "en": [
+    "It aims a red laser for a second before firing: dodge roll at that moment.",
+    "Flank it and hit the rear thrusters, the front rotors are armoured."
+   ]
+  }
+ },
+ "firefly": {
+  "threat": "high",
+  "need": 2,
+  "gear": [
+   "Wolfpack"
+  ],
+  "weak": {
+   "ru": "Жёлтый баллон на корпусе и двигатели",
+   "pl": "Żółty zbiornik na kadłubie i silniki",
+   "en": "Yellow canister on the body and thrusters"
+  },
+  "tactic": {
+   "ru": [
+    "Стреляй по жёлтому баллону, он появляется перед атакой.",
+    "Перед плевком огнём слышен выпуск газа, успей уйти с линии.",
+    "После гибели земля вокруг горит, не стой рядом."
+   ],
+   "pl": [
+    "Strzelaj w żółty zbiornik, pojawia się przed atakiem.",
+    "Przed plunięciem ogniem słychać syk gazu, zejdź z linii ognia.",
+    "Po śmierci ziemia wokół płonie, nie stój blisko."
+   ],
+   "en": [
+    "Shoot the yellow canister, it shows just before an attack.",
+    "A gas hiss comes before the flame, step off its line.",
+    "The ground burns where it dies, so keep clear."
+   ]
+  }
+ },
+ "snitch": {
+  "threat": "low",
+  "need": 0,
+  "gear": [],
+  "weak": {
+   "ru": "Любая часть корпуса, брони нет",
+   "pl": "Dowolna część kadłuba, brak pancerza",
+   "en": "Any part of the body, no armour"
+  },
+  "tactic": {
+   "ru": [
+    "Убивай как можно быстрее: заметив цель, он вызывает волну дронов.",
+    "Подойдёт любое оружие, важна только скорость."
+   ],
+   "pl": [
+    "Zabij go jak najszybciej: po wykryciu celu wzywa falę dronów.",
+    "Wystarczy każda broń, liczy się tylko szybkość."
+   ],
+   "en": [
+    "Kill it fast: once it spots you it calls in a wave of drones.",
+    "Any weapon works, speed is all that matters."
+   ]
+  }
+ },
+ "spotter": {
+  "threat": "low",
+  "need": 1,
+  "gear": [
+   "Seeker Grenade"
+  ],
+  "weak": {
+   "ru": "Точные слабые места не описаны, корпус небольшой",
+   "pl": "Słabe punkty nie są opisane, kadłub jest mały",
+   "en": "No specific weak point recorded, small body"
+  },
+  "tactic": {
+   "ru": [
+    "Сбей его до захвата цели: он наводит огонь Бомбардира.",
+    "От ударов Бомбардира прячься под высоким укрытием.",
+    "Лучше всего работают самонаводящиеся гранаты."
+   ],
+   "pl": [
+    "Zestrzel go, zanim namierzy cel: naprowadza ostrzał Bombardiera.",
+    "Przed ostrzałem Bombardiera chroń się pod wysoką osłoną.",
+    "Najlepiej działają granaty tropiące."
+   ],
+   "en": [
+    "Bring it down before it locks on: it directs Bombardier fire.",
+    "Use overhead cover against Bombardier shells.",
+    "Seeker Grenades work best."
+   ]
+  }
+ },
+ "reclaimer": {
+  "threat": "low",
+  "need": 0,
+  "gear": [],
+  "weak": {
+   "ru": "Точные слабые места не описаны",
+   "pl": "Słabe punkty nie są opisane",
+   "en": "No specific weak point recorded"
+  },
+  "tactic": {
+   "ru": [
+    "Легко отключается инструментом рейдера.",
+    "Когда по нему стреляют, он выставляет щит, поэтому не трать патроны впустую."
+   ],
+   "pl": [
+    "Łatwo go zakłócić narzędziem rajdera.",
+    "Ostrzelany wystawia tarczę, więc nie marnuj amunicji."
+   ],
+   "en": [
+    "Easily disrupted with a Raider Tool.",
+    "It raises a shield when shot, so do not waste ammo."
+   ]
+  }
+ },
+ "rocketeer": {
+  "threat": "critical",
+  "need": 2,
+  "gear": [
+   "Wolfpack"
+  ],
+  "weak": {
+   "ru": "Двигатели, сканер и серебристый баллон на спине",
+   "pl": "Silniki, skaner i srebrny zbiornik na grzbiecie",
+   "en": "Thrusters, scanner and the silver canister on its back"
+  },
+  "tactic": {
+   "ru": [
+    "Четыре жёлтых лазера перед залпом сходятся и краснеют: это сигнал уходить.",
+    "Двух гранат «Волчья стая» обычно хватает.",
+    "Лиши его устойчивости уроном по двигателям."
+   ],
+   "pl": [
+    "Cztery żółte lasery zbiegają się i czerwienieją przed salwą: to sygnał do ucieczki.",
+    "Zwykle wystarczą dwa granaty Wataha.",
+    "Zdestabilizuj go, uszkadzając silniki."
+   ],
+   "en": [
+    "Four yellow lasers converge and turn red before a salvo: that is your cue to move.",
+    "Two Wolfpack Grenades usually finish it.",
+    "Damage the thrusters to destabilise it."
+   ]
+  }
+ },
+ "vaporizer": {
+  "threat": "critical",
+  "need": 2,
+  "gear": [
+   "Wolfpack"
+  ],
+  "weak": {
+   "ru": "Двигатели и сканер",
+   "pl": "Silniki i skaner",
+   "en": "Thrusters and scanner"
+  },
+  "tactic": {
+   "ru": [
+    "Энергощит блокирует брошенные предметы.",
+    "Выманивай щит любым брошенным предметом, затем сразу кидай «Волчью стаю»."
+   ],
+   "pl": [
+    "Tarcza energetyczna blokuje rzucane przedmioty.",
+    "Sprowokuj tarczę rzuconym przedmiotem, a zaraz potem rzuć Watahę."
+   ],
+   "en": [
+    "Its energy shield blocks thrown items.",
+    "Bait the shield with any thrown item, then follow up with a Wolfpack Grenade."
+   ]
+  }
+ },
+ "arc-turbine": {
+  "threat": "critical",
+  "need": 2,
+  "gear": [],
+  "weak": {
+   "ru": "Вращающиеся слабые места, когда он приземлился",
+   "pl": "Obracające się słabe punkty, gdy wyląduje",
+   "en": "Spinning weak points while it is landed"
+  },
+  "tactic": {
+   "ru": [
+    "Чтобы не задеть его мины, присядь или остановись.",
+    "Стреляй по слабым местам в момент посадки."
+   ],
+   "pl": [
+    "Aby uniknąć jego min, kucnij lub się zatrzymaj.",
+    "Strzelaj w słabe punkty, gdy wyląduje."
+   ],
+   "en": [
+    "Crouch or stop moving to avoid its mines.",
+    "Hit the weak points while it is landed."
+   ]
+  }
+ },
+ "pop": {
+  "threat": "moderate",
+  "need": 0,
+  "gear": [],
+  "weak": {
+   "ru": "Любая часть, брони нет",
+   "pl": "Dowolna część, brak pancerza",
+   "en": "Any part, no armour"
+  },
+  "tactic": {
+   "ru": [
+    "Убивается любым оружием на расстоянии.",
+    "Если подкатился близко, сделай перекат, чтобы он взорвался впустую."
+   ],
+   "pl": [
+    "Zniszczysz go każdą bronią z dystansu.",
+    "Jeśli podjedzie blisko, zrób unik, by wybuchł na próżno."
+   ],
+   "en": [
+    "Any weapon kills it at range.",
+    "If it gets close, dodge roll so that it detonates harmlessly."
+   ]
+  }
+ },
+ "fireball": {
+  "threat": "high",
+  "need": 2,
+  "gear": [],
+  "weak": {
+   "ru": "Белое ядро, открывается при атаке",
+   "pl": "Biały rdzeń, odsłania się przy ataku",
+   "en": "White core, exposed while attacking"
+  },
+  "tactic": {
+   "ru": [
+    "Подпусти его, пока не откроет переднюю панель, и стреляй в ядро.",
+    "Одного тяжёлого патрона в ядро обычно достаточно.",
+    "После уничтожения сразу отойди."
+   ],
+   "pl": [
+    "Poczekaj, aż otworzy przedni panel, i strzel w rdzeń.",
+    "Zwykle wystarczy jeden ciężki nabój w rdzeń.",
+    "Po zniszczeniu od razu się odsuń."
+   ],
+   "en": [
+    "Let it open its front panel, then shoot the core.",
+    "One heavy round to the core is usually enough.",
+    "Move away right after destroying it."
+   ]
+  }
+ },
+ "comet": {
+  "threat": "high",
+  "need": 2,
+  "gear": [
+   "Wolfpack"
+  ],
+  "weak": {
+   "ru": "Ядро, открывается при атаке",
+   "pl": "Rdzeń, odsłania się przy ataku",
+   "en": "Core, exposed while attacking"
+  },
+  "tactic": {
+   "ru": [
+    "Катится на тебя и взрывается: в последний момент уходи в сторону.",
+    "Работают тяжёлые патроны и гранаты.",
+    "Чтобы обыскать ядро, Комету нужно именно убить."
+   ],
+   "pl": [
+    "Toczy się ku tobie i wybucha: w ostatniej chwili odskocz w bok.",
+    "Działają ciężkie naboje i granaty.",
+    "Aby przeszukać rdzeń, Kometę trzeba zabić."
+   ],
+   "en": [
+    "It rolls at you and explodes: sidestep at the last moment.",
+    "Heavy Ammo and grenades work well.",
+    "You must actually kill it to loot its core."
+   ]
+  }
+ },
+ "arc-surveyor": {
+  "threat": "high",
+  "need": 2,
+  "gear": [
+   "Showstopper",
+   "Wolfpack"
+  ],
+  "weak": {
+   "ru": "Ядро, открывается во время передачи сигнала",
+   "pl": "Rdzeń, odsłania się podczas nadawania sygnału",
+   "en": "Core, exposed while it transmits"
+  },
+  "tactic": {
+   "ru": [
+    "Он быстро убегает, поэтому сначала оглуши его.",
+    "Стреляй, когда он остановился и передаёт сигнал: ядро открыто.",
+    "Лучше всего работает взрывчатка."
+   ],
+   "pl": [
+    "Szybko ucieka, więc najpierw go ogłusz.",
+    "Strzelaj, gdy się zatrzyma i nadaje sygnał: rdzeń jest odsłonięty.",
+    "Najlepiej działają materiały wybuchowe."
+   ],
+   "en": [
+    "It flees quickly, so stun it first.",
+    "Fire while it stops to transmit: the core is exposed.",
+    "Explosives work best."
+   ]
+  }
+ },
+ "tick": {
+  "threat": "moderate",
+  "need": 0,
+  "gear": [],
+  "weak": {
+   "ru": "Любая часть, брони нет",
+   "pl": "Dowolna część, brak pancerza",
+   "en": "Any part, no armour"
+  },
+  "tactic": {
+   "ru": [
+    "Прячется в зданиях на стенах и потолках, смотри вверх.",
+    "Как только вцепился, сразу делай перекат."
+   ],
+   "pl": [
+    "Chowa się w budynkach na ścianach i sufitach, patrz w górę.",
+    "Gdy się przyczepi, natychmiast zrób unik."
+   ],
+   "en": [
+    "It hides on walls and ceilings indoors, so look up.",
+    "Dodge roll the moment it latches on."
+   ]
+  }
+ },
+ "shredder": {
+  "threat": "high",
+  "need": 2,
+  "gear": [
+   "Hullcracker",
+   "Wolfpack"
+  ],
+  "weak": {
+   "ru": "Двигатели",
+   "pl": "Silniki",
+   "en": "Thrusters"
+  },
+  "tactic": {
+   "ru": [
+    "Никогда не вступай в бой без укрытия.",
+    "Когда подаёт сигнал атаки, прячься: залп шрапнели летит во все стороны.",
+    "Лучше всего работают тяжёлые патроны, гранаты и «Взломщик корпусов»."
+   ],
+   "pl": [
+    "Nigdy nie walcz bez osłony.",
+    "Gdy sygnalizuje atak, schowaj się: salwa szrapneli leci we wszystkie strony.",
+    "Najlepsze są ciężkie naboje, granaty i Rozłupywacz."
+   ],
+   "en": [
+    "Never engage without cover.",
+    "Hide when it signals an attack: the shrapnel volley goes in every direction.",
+    "Heavy Ammo, grenades and the Hullcracker work best."
+   ]
+  }
+ },
+ "skulker": {
+  "threat": "high",
+  "need": 2,
+  "gear": [],
+  "weak": {
+   "ru": "Точные слабые места не описаны",
+   "pl": "Słabe punkty nie są opisane",
+   "en": "No specific weak point recorded"
+  },
+  "tactic": {
+   "ru": [
+    "Обычно появляются группой.",
+    "Выпускает сразу 3–7 пуль, держись за укрытием.",
+    "Используй тяжёлые патроны."
+   ],
+   "pl": [
+    "Zwykle pojawiają się w grupie.",
+    "Wystrzeliwuje naraz 3–7 pocisków, trzymaj się za osłoną.",
+    "Używaj ciężkiej amunicji."
+   ],
+   "en": [
+    "They usually appear in groups.",
+    "It fires 3–7 bullets at once, so stay behind cover.",
+    "Use Heavy Ammo."
+   ]
+  }
+ },
+ "turret": {
+  "threat": "moderate",
+  "need": 1,
+  "gear": [],
+  "weak": {
+   "ru": "Корпус, брони нет",
+   "pl": "Kadłub, brak pancerza",
+   "en": "Body, no armour"
+  },
+  "tactic": {
+   "ru": [
+    "Выманивай очередь из-за укрытия: стреляет по последней известной позиции.",
+    "Хватает примерно двух тяжёлых патронов."
+   ],
+   "pl": [
+    "Wyprowokuj serię zza osłony: strzela w ostatnią znaną pozycję.",
+    "Wystarczą około dwa ciężkie naboje."
+   ],
+   "en": [
+    "Bait its burst from behind cover: it fires at your last known position.",
+    "About two heavy rounds are enough."
+   ]
+  }
+ },
+ "sentinel": {
+  "threat": "high",
+  "need": 1,
+  "gear": [],
+  "weak": {
+   "ru": "Жёлтая капсула на тыльной стороне вращающегося манипулятора",
+   "pl": "Żółta kapsuła z tyłu obrotowego ramienia",
+   "en": "Yellow canister on the back of the rotating arm"
+  },
+  "tactic": {
+   "ru": [
+    "Это снайпер на большой дистанции: выманивай выстрел и прячься.",
+    "Четыре жёлтых луча означают, что выстрел уже летит.",
+    "Сними капсулу точным выстрелом."
+   ],
+   "pl": [
+    "To snajper dalekiego zasięgu: wyprowokuj strzał i się schowaj.",
+    "Cztery żółte promienie oznaczają, że strzał jest w drodze.",
+    "Zniszcz kapsułę celnym strzałem."
+   ],
+   "en": [
+    "It is a long-range sniper: bait the shot and hide.",
+    "Four yellow beams signal an incoming shot.",
+    "Take out the canister with an accurate shot."
+   ]
+  }
+ },
+ "hydra": {
+  "threat": "critical",
+  "need": 3,
+  "gear": [
+   "Hullcracker",
+   "Photoelectric Cloak"
+  ],
+  "weak": {
+   "ru": "Слабые места на спине",
+   "pl": "Słabe punkty na grzbiecie",
+   "en": "Weak points on its back"
+  },
+  "tactic": {
+   "ru": [
+    "Гораздо проще брать группой.",
+    "Хорошо работает «Взломщик корпусов».",
+    "Фотоэлектрический плащ позволяет обойти её вовсе."
+   ],
+   "pl": [
+    "Znacznie łatwiej pokonać ją w grupie.",
+    "Dobrze działa Rozłupywacz.",
+    "Peleryna fotoelektryczna pozwala ją całkiem ominąć."
+   ],
+   "en": [
+    "Far easier in a group.",
+    "The Hullcracker works well.",
+    "A Photoelectric Cloak lets you avoid it entirely."
+   ]
+  }
+ },
+ "bastion": {
+  "threat": "critical",
+  "need": 3,
+  "gear": [
+   "Deadline",
+   "Showstopper",
+   "Wolfpack"
+  ],
+  "weak": {
+   "ru": "Жёлтые суставы ног и задняя капсула",
+   "pl": "Żółte stawy nóg i tylna kapsuła",
+   "en": "Yellow leg joints and the rear canister"
+  },
+  "tactic": {
+   "ru": [
+    "После визга он три секунды поливает миниганом последнюю позицию: сразу уходи.",
+    "Оглуши его, затем бей по суставам ног.",
+    "«Дедлайн» ставь на заднюю часть или голову."
+   ],
+   "pl": [
+    "Po pisku przez trzy sekundy ostrzeliwuje ostatnią pozycję: natychmiast odejdź.",
+    "Ogłusz go, a potem strzelaj w stawy nóg.",
+    "Deadline umieść z tyłu lub na głowie."
+   ],
+   "en": [
+    "After a screech it sprays your last position for three seconds: leave at once.",
+    "Stun it, then shoot the leg joints.",
+    "Place a Deadline on its rear or head."
+   ]
+  }
+ },
+ "bombardier": {
+  "threat": "critical",
+  "need": 3,
+  "gear": [
+   "Hullcracker",
+   "Deadline",
+   "Wolfpack"
+  ],
+  "weak": {
+   "ru": "Жёлтые суставы ног и задняя капсула",
+   "pl": "Żółte stawy nóg i tylna kapsuła",
+   "en": "Yellow leg joints and the rear canister"
+  },
+  "tactic": {
+   "ru": [
+    "Сначала уничтожь Наводчика: без него обстрел намного слабее.",
+    "Не подходи близко, рядом он бьёт ударной волной.",
+    "Лучше всего работают тяжёлые патроны и «Взломщик корпусов»."
+   ],
+   "pl": [
+    "Najpierw zniszcz Obserwatora: bez niego ostrzał jest znacznie słabszy.",
+    "Nie podchodź blisko, z bliska uderza falą uderzeniową.",
+    "Najlepsze są ciężkie naboje i Rozłupywacz."
+   ],
+   "en": [
+    "Destroy the Spotter first: its shelling is far weaker without it.",
+    "Do not get close, it uses a shockwave at short range.",
+    "Heavy Ammo and the Hullcracker work best."
+   ]
+  }
+ },
+ "leaper": {
+  "threat": "critical",
+  "need": 3,
+  "gear": [
+   "Wolfpack",
+   "Showstopper"
+  ],
+  "weak": {
+   "ru": "Суставы ног и «глаз»",
+   "pl": "Stawy nóg i „oko”",
+   "en": "Leg joints and the eye"
+  },
+  "tactic": {
+   "ru": [
+    "Прячься за дверными проёмами, в которые он не пролезает.",
+    "Оглуши его, затем используй взрывчатку.",
+    "Если промахнулся прыжком, бьёт кинетическим взрывом, держи дистанцию."
+   ],
+   "pl": [
+    "Chowaj się za drzwiami, przez które się nie zmieści.",
+    "Ogłusz go, a potem użyj materiałów wybuchowych.",
+    "Gdy chybi skokiem, uderza wybuchem kinetycznym, trzymaj dystans."
+   ],
+   "en": [
+    "Hide behind doorways it cannot fit through.",
+    "Stun it, then use explosives.",
+    "If its leap misses it releases a kinetic blast, so keep your distance."
+   ]
+  }
+ },
+ "bully": {
+  "threat": "critical",
+  "need": 3,
+  "gear": [
+   "Wolfpack"
+  ],
+  "weak": {
+   "ru": "Ноги и голова",
+   "pl": "Nogi i głowa",
+   "en": "Legs and head"
+  },
+  "tactic": {
+   "ru": [
+    "Держись в укрытии, куда он не может добраться.",
+    "Гранатами «Волчья стая» и огнём ломай ноги или голову."
+   ],
+   "pl": [
+    "Trzymaj się osłony, do której nie dotrze.",
+    "Granatami Wataha i ogniem niszcz nogi lub głowę."
+   ],
+   "en": [
+    "Stay in cover it cannot reach.",
+    "Use Wolfpack Grenades and gunfire to break its legs or head."
+   ]
+  }
+ },
+ "queen": {
+  "threat": "extreme",
+  "need": 3,
+  "gear": [
+   "Deadline",
+   "Hullcracker"
+  ],
+  "weak": {
+   "ru": "Жёлтые суставы ног и красное ядро, закрыто бронепластинами",
+   "pl": "Żółte stawy nóg i czerwony rdzeń pod płytami pancerza",
+   "en": "Yellow leg joints and the red core behind armour plates"
+  },
+  "tactic": {
+   "ru": [
+    "Встречается только при событии «Сборщик». Нужна группа рейдеров.",
+    "Сними бронепластины, затем бей по ядру.",
+    "«Дедлайн» ставь на голову или открытое ядро. Берегись миномётов, лазера и импульса вблизи."
+   ],
+   "pl": [
+    "Pojawia się tylko podczas wydarzenia Harvester. Potrzebna jest grupa rajderów.",
+    "Zdejmij płyty pancerza, a potem uderzaj w rdzeń.",
+    "Deadline umieść na głowie lub odsłoniętym rdzeniu. Uważaj na moździerze, laser i impuls z bliska."
+   ],
+   "en": [
+    "It only appears during the Harvester event. You need a group of Raiders.",
+    "Strip the armour plates, then hit the core.",
+    "Place Deadlines on the head or exposed core. Watch for mortars, the laser and the close-range pulse."
+   ]
+  }
+ },
+ "matriarch": {
+  "threat": "extreme",
+  "need": 3,
+  "gear": [
+   "Deadline",
+   "Hullcracker"
+  ],
+  "weak": {
+   "ru": "Жёлтые суставы ног и красное ядро, закрыто бронепластинами",
+   "pl": "Żółte stawy nóg i czerwony rdzeń pod płytami pancerza",
+   "en": "Yellow leg joints and the red core behind armour plates"
+  },
+  "tactic": {
+   "ru": [
+    "Тот же подход, что с Королевой: сними пластины и бей по ядру. Нужна группа.",
+    "Опасна самонаводящимися ракетами, газовыми миномётами и светошумовыми гранатами.",
+    "Может призывать других ARC и включать энергощит."
+   ],
+   "pl": [
+    "To samo podejście co przy Królowej: zdejmij płyty i uderzaj w rdzeń. Potrzebna jest grupa.",
+    "Groźna przez rakiety samonaprowadzające, moździerze gazowe i granaty błyskowe.",
+    "Potrafi przywoływać inne ARC i włączać tarczę energetyczną."
+   ],
+   "en": [
+    "Same approach as the Queen: strip the plates and hit the core. Bring a group.",
+    "Dangerous homing rockets, gas mortars and flash grenades.",
+    "It can summon other ARC and raise an energy shield."
+   ]
+  }
+ },
+ "arc-frigate": {
+  "threat": "extreme",
+  "need": 3,
+  "gear": [
+   "Photoelectric Cloak",
+   "Hullcracker",
+   "Deadline"
+  ],
+  "weak": {
+   "ru": "Ядра",
+   "pl": "Rdzenie",
+   "en": "Cores"
+  },
+  "tactic": {
+   "ru": [
+    "Появляется при особом условии «Фрегат».",
+    "Фотоэлектрический плащ помогает пройти защиту.",
+    "По ядрам бей «Взломщиком корпусов» или «Дедлайном». Для средней секции нужно трое, для сброса груза двое."
+   ],
+   "pl": [
+    "Pojawia się przy warunku Fregata.",
+    "Peleryna fotoelektryczna pomaga ominąć obronę.",
+    "Rdzenie niszcz Rozłupywaczem lub Deadline. Do środkowej sekcji potrzeba trzech osób, do zrzutu ładunku dwóch."
+   ],
+   "en": [
+    "It appears under the Frigate map condition.",
+    "A Photoelectric Cloak helps you get past its defences.",
+    "Hit the cores with the Hullcracker or Deadline. The middle section needs three Raiders, the cargo release two."
+   ]
+  }
+ },
+ "assessor": {
+  "threat": "neutral",
+  "need": 0,
+  "gear": [],
+  "weak": {
+   "ru": "Не сражается: это объект для обыска",
+   "pl": "Nie walczy: to obiekt do przeszukania",
+   "en": "Does not fight: it is an object to search"
+  },
+  "tactic": {
+   "ru": [
+    "Встречается при особом условии «Тщательное исследование».",
+    "Обыщи его: из него падают ценные чертежи."
+   ],
+   "pl": [
+    "Pojawia się przy warunku Dokładne badanie.",
+    "Przeszukaj go: wypadają z niego cenne plany."
+   ],
+   "en": [
+    "Found under the Close Scrutiny map condition.",
+    "Search it: valuable blueprints drop from it."
+   ]
+  }
+ },
+ "arc-courier": {
+  "threat": "neutral",
+  "need": 0,
+  "gear": [],
+  "weak": {
+   "ru": "Не сражается: нужно вскрыть",
+   "pl": "Nie walczy: trzeba go otworzyć",
+   "en": "Does not fight: it has to be breached"
+  },
+  "tactic": {
+   "ru": [
+    "Нейтральный объект, вскрой его ради лута."
+   ],
+   "pl": [
+    "Neutralny obiekt, otwórz go dla łupu."
+   ],
+   "en": [
+    "A neutral object, breach it for loot."
+   ]
+  }
+ },
+ "arc-probe": {
+  "threat": "neutral",
+  "need": 0,
+  "gear": [],
+  "weak": {
+   "ru": "Не сражается: нужно вскрыть",
+   "pl": "Nie walczy: trzeba go otworzyć",
+   "en": "Does not fight: it has to be breached"
+  },
+  "tactic": {
+   "ru": [
+    "Нейтральный объект, вскрой его ради лута.",
+    "При взломе громко сигналит, это слышат ARC и другие рейдеры."
+   ],
+   "pl": [
+    "Neutralny obiekt, otwórz go dla łupu.",
+    "Podczas włamania głośno sygnalizuje, słyszą to ARC i inni rajderzy."
+   ],
+   "en": [
+    "A neutral object, breach it for loot.",
+    "It sounds loud signals while being breached, and ARC and other Raiders can hear them."
+   ]
+  }
+ }
+}

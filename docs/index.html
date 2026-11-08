@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>FunArcRaiders</title>
+<meta name="description" content="Interactive fan-made field guide for ARC Raiders: items, quests, ARC robots and blueprints on every map. RU / PL / EN.">
+<meta name="theme-color" content="#15130e">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2315130e'/%3E%3Cpath d='M0 26 26 0h6L6 32H0z' fill='%23e2a21a'/%3E%3Cpath d='M7 32 32 7v6L13 32z' fill='%232fa594'/%3E%3Cpath d='M14 32 32 14v6L20 32z' fill='%23d9512c'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="vendor/leaflet.css">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-pane="left">
+<div class="stripe" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+<header class="top">
+  <a class="brand" href="#" aria-label="FunArcRaiders"><b>FUN</b><span>ARC RAIDERS</span></a>
+  <p class="tag" id="tag"></p>
+  <div class="lang" role="group" id="lang">
+    <button type="button" data-lang="ru">RU</button><button type="button" data-lang="pl">PL</button><button type="button" data-lang="en">EN</button>
+  </div>
+</header>
+<main class="deck">
+  <aside class="left">
+    <div class="selectors" id="selectors"></div>
+    <div class="dossier" id="dossier" tabindex="-1"></div>
+  </aside>
+  <section class="table" id="table">
+    <div class="gear" id="gear" hidden></div>
+    <div id="map" aria-label="Map"></div>
+    <div class="sweep" id="sweep" aria-hidden="true"></div>
+    <div class="hello" id="hello"></div>
+    <div class="status" id="status" hidden></div>
+    <div class="legend" id="legend" hidden></div>
+    <div class="ctrl" id="ctrl"></div>
+  </section>
+  <aside class="right">
+    <h2 id="mapsTitle"></h2>
+    <ol class="cards" id="cards"></ol>
+    <p class="credit" id="credit"></p>
+  </aside>
+</main>
+<nav class="tabs" id="tabs" aria-label="Panels">
+  <button type="button" data-pane="left"></button><button type="button" data-pane="map"></button><button type="button" data-pane="right"></button>
+</nav>
+<script src="vendor/leaflet.js"></script>
+<script src="data/core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

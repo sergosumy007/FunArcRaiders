@@ -1,0 +1,6 @@
+pipeline/cache/
+pipeline/_*
+research/
+__pycache__/
+*.pyc
+.playwright-mcp/
