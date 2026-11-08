@@ -69,6 +69,12 @@ def load_content(name):
         return json.load(fh)
 
 
+def nav_labels(loc):
+    with open(os.path.join(CACHE, "at", f"page_{loc}.html"), encoding="utf-8", errors="replace") as fh:
+        page = fh.read()
+    return {slug: html.unescape(label) for slug, label in re.findall(r'/maps/([a-z-]+)"[^>]*><span class="arc-nav-label">([^<]+)<', page)}
+
+
 def norm(text):
     return str(text).strip().lower().replace("-", "_")
 
@@ -634,7 +640,7 @@ def main():
             names_block["arc"][aid] = rec.get("name") or (names["arc"]["en"].get(slug) or {}).get("name") or aid.replace("-", " ").title()
             text["arc"][aid] = {"about": rec.get("about") or "", "weak": info["weak"][loc], "tactic": info["tactic"][loc]}
         for slug, _ in MAPS:
-            names_block["map"][slug] = RU_MAPS[slug] if loc == "ru" else (names["map"].get(loc) or {}).get(slug) or slug
+            names_block["map"][slug] = RU_MAPS[slug] if loc == "ru" else nav_labels(loc).get(slug) or slug
         for slug, nm in (names["cont"].get(loc) or {}).items():
             names_block["cont"][slug] = nm or (names["cont"]["en"].get(slug)) or slug
         for slug in {s for pm in per_map.values() for s in pm["layer"]["C"]} - set(names_block["cont"]):

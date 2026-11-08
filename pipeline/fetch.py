@@ -67,6 +67,8 @@ def arctracker():
     save(f"{AT}/generated/client/items/items-index.en.json", "at/index_en.json")
     for loc in LOCALES:
         save(f"{AT}/generated/client/map-conditions/{loc}.json", f"at/mc_{loc}.json")
+    for loc in LOCALES:
+        save(f"{AT}/{loc}/maps", f"at/page_{loc}.html")
     for slug in AT_MAPS:
         for loc in LOCALES:
             suffix = "" if loc == "en" else f".{loc}"
