@@ -1,0 +1,12 @@
+{
+  "name": "funarcraiders-community",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --local --port 8787",
+    "test": "node test/api.test.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.159.0"
+  }
+}

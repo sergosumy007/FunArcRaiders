@@ -4,3 +4,7 @@ research/
 __pycache__/
 *.pyc
 .playwright-mcp/
+worker/node_modules/
+worker/.wrangler/
+worker/.dev.vars
+brag-output/

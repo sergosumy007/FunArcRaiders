@@ -160,6 +160,8 @@
   overlay.on('click', function (e) {
     var m = e.sourceTarget || e.layer;
     if (!m.options.meta) return;
+    if (CM.aim) { cmPick(m.getLatLng(), m.options.meta.cm); return; }
+    if (m.options.meta.cm) { popup.setLatLng(m.getLatLng()).setContent(cmCard(m.options.meta.cm)).openOn(map); return; }
     popup.setLatLng(m.getLatLng()).setContent(pointTitle(m)).openOn(map);
   });
   overlay.on('mouseover', function (e) { var m = e.sourceTarget || e.layer; if (m.setRadius && m.options.meta) m.setRadius(m.options.radius + 2.5); });
@@ -178,9 +180,9 @@
       for (var i = 0; i < l.pts.length; i++) {
         var p = l.pts[i], r = l.r;
         var g = new Glyph([p.y, p.x], {
-          radius: r, r0: r, color: l.stroke || '#15130e', weight: 1.4, fillColor: l.color, fillOpacity: 1,
+          radius: r, r0: r, color: l.stroke || '#15130e', weight: 1.4, fillColor: p.c || l.color, fillOpacity: p.op === undefined ? 1 : p.op,
           glyph: l.glyph, label: p.n || null, bubblingMouseEvents: false,
-          meta: { l: li, title: p.t, sub: p.s, low: p.f === 1, step: p.n }
+          meta: { l: li, title: p.t, sub: p.s, low: p.f === 1, step: p.cm ? undefined : p.n, cm: p.cm }
         });
         overlay.addLayer(g);
       }
@@ -336,12 +338,14 @@
   function paintLegend() {
     var box = $('#legend');
     var shown = layerSet.filter(function (l) { return l.pts.length; });
-    if (shown.length < 2 || S.kind === 'quest') { box.hidden = true; box.innerHTML = ''; return; }
+    var hasCm = shown.some(function (l) { return l.cm; });
+    if (!hasCm && (shown.length < 2 || S.kind === 'quest')) { box.hidden = true; box.innerHTML = ''; return; }
     var rest = shown.filter(function (l) { return l.hide; }), restOn = rest.some(function (l) { return !isOff(l); });
     var rows = shown.filter(function (l) { return !l.hide; });
     if (rest.length) rows = rows.concat([{ key: '__conts', label: U('all_conts'), glyph: 'dot', color: '#b7b2a6', hide: !restOn, pts: { length: rest.reduce(function (s, l) { return s + l.pts.length; }, 0) } }], restOn ? rest : []);
+    if (S.kind === 'quest') rows = rows.filter(function (l) { return l.cm; });
     box.hidden = false;
-    box.innerHTML = '<h3><span>' + esc(U('legend')) + '</span><button type="button" data-all="1">' + esc(U(shown.some(function (l) { return !isOff(l); }) ? 'layer_none' : 'layer_all')) + '</button></h3>' +
+    box.innerHTML = '<h3><span>' + esc(U('legend')) + '</span>' + (S.kind === 'quest' ? '' : '<button type="button" data-all="1">' + esc(U(shown.some(function (l) { return !isOff(l); }) ? 'layer_none' : 'layer_all')) + '</button>') + '</h3>' +
       rows.map(function (l) {
         var shape = l.glyph === 'diamond' ? 'square' : l.glyph === 'tri' ? 'tri' : '';
         return '<label><input type="checkbox" data-key="' + esc(l.key) + '"' + (isOff(l) ? '' : ' checked') + '><i class="swatch ' + shape + '" style="background:' + l.color + '"></i><span>' + esc(l.label) + '</span><small>' + l.pts.length + '</small></label>';
@@ -380,7 +384,7 @@
     var box = $('#status');
     if (S.kind && !anyLit()) { box.textContent = U('no_map'); box.hidden = false; return; }
     if (S.kind && (!S.map || !lit(S.map))) { box.textContent = U('pick_map'); box.hidden = false; return; }
-    if (S.kind && FAR.mapdata[S.map] && !layerSet.some(hasPts)) {
+    if (S.kind && FAR.mapdata[S.map] && !layerSet.some(function (l) { return !l.cm && hasPts(l); })) {
       box.textContent = U(mapInfo(S.map).floors && otherFloorHas() ? 'no_points_floor' : S.kind === 'key' ? 'door_no_point' : 'no_points');
       box.hidden = false;
       return;
@@ -458,12 +462,13 @@
         if (!here && flatPoints(md.K[S.id], null).length) { S.floor = S.floor === 'top' ? 'bottom' : 'top'; baseDue = true; }
       }
       if (baseDue) { baseDue = false; setTiles(); paintLabels(); sweep(); }
-      layerSet = (S.kind && lit(S.map)) ? buildLayers(md) : [];
+      layerSet = ((S.kind && lit(S.map)) ? buildLayers(md) : []).concat(cmLayers());
       drawLayers();
       paintLegend();
       paintGear();
       paintStatus();
       paintCtrl();
+      cmSync();
     });
   }
 
@@ -723,6 +728,310 @@
     });
   }
 
+  /* ---------- reports from players ---------- */
+
+  var CM_CFG = window.FAR_CM || {};
+  var CM_SEND = !!CM_CFG.api && !!CM_CFG.turnstile && location.protocol !== 'file:';
+  var CM_COLOR = '#ff4f8b', CM_EMPTY = '#b7b2a6', CM_NOTE = '#eadfc6';
+  var CM_TTL = 120000, CM_OLD = 60 * 86400, CM_FIRM = 3, CM_SNAP_PX = 22, CM_SNAP_MAX = 8;
+  var CM_VERDICT = { item: 1, bp: 1, arc: 1 };
+  var CM = { maps: {}, pending: {}, aim: false, target: null, verdict: null, busy: false, widget: null, key: '' };
+  var cmPin = L.layerGroup().addTo(map);
+
+  var CM_WORDS = {
+    ru: {
+      add: 'Поделиться опытом', stop: 'Отмена', hint: 'Нажми на место на карте', title: 'Мой опыт', layer: 'От игроков',
+      found: 'Нашёл здесь', empty: 'Обыскал, пусто', seen: 'Видел здесь', none: 'Проверил, нет',
+      tip: 'Совет об этом месте (необязательно)', tip_only: 'Совет об этом месте', send: 'Отправить', sending: 'Отправляю…',
+      fine: 'Отметка видна сразу, совет — после проверки. IP и имена не хранятся.',
+      need: 'Выбери отметку или напиши совет', thanks: 'Спасибо! Отметка уже на карте', thanks_tip: 'Спасибо! Совет появится после проверки', dup: 'Эта отметка уже учтена, спасибо',
+      n_found: 'Нашли', n_empty: 'Пусто', n_seen: 'Видели', n_none: 'Не было', players: 'Игроков', last: 'Последний отчёт',
+      few: 'Мало отчётов, пока не подтверждено', old: 'Отчёт старый, мог устареть после патча',
+      me_found: 'Я тоже нашёл', me_empty: 'У меня пусто', me_seen: 'Я тоже видел', me_none: 'У меня нет', add_tip: 'Добавить совет', map_tip: 'Совет игрока', stamp: 'От игроков',
+      limit: 'На сегодня лимит отчётов исчерпан', captcha: 'Проверка не пройдена, попробуй ещё раз', tip_link: 'Ссылки и упоминания в советах нельзя', tip_len: 'Совет: от 3 до 280 знаков', net: 'Сервер не отвечает, попробуй позже', bad: 'Не получилось отправить'
+    },
+    pl: {
+      add: 'Podziel się', stop: 'Anuluj', hint: 'Kliknij miejsce na mapie', title: 'Moje doświadczenie', layer: 'Od graczy',
+      found: 'Znaleziono tutaj', empty: 'Przeszukano, pusto', seen: 'Widziano tutaj', none: 'Sprawdzono, nie ma',
+      tip: 'Wskazówka o tym miejscu (opcjonalnie)', tip_only: 'Wskazówka o tym miejscu', send: 'Wyślij', sending: 'Wysyłanie…',
+      fine: 'Znacznik widać od razu, wskazówkę po sprawdzeniu. Nie przechowujemy IP ani nazw.',
+      need: 'Wybierz znacznik lub napisz wskazówkę', thanks: 'Dzięki! Znacznik jest już na mapie', thanks_tip: 'Dzięki! Wskazówka pojawi się po sprawdzeniu', dup: 'Ten znacznik jest już zapisany, dzięki',
+      n_found: 'Znaleziono', n_empty: 'Pusto', n_seen: 'Widziano', n_none: 'Nie było', players: 'Graczy', last: 'Ostatni raport',
+      few: 'Mało raportów, jeszcze niepotwierdzone', old: 'Stary raport, po patchu mógł stracić ważność',
+      me_found: 'Też znaleziono', me_empty: 'U mnie pusto', me_seen: 'Też widziano', me_none: 'U mnie nie ma', add_tip: 'Dodaj wskazówkę', map_tip: 'Wskazówka gracza', stamp: 'Od graczy',
+      limit: 'Dzisiejszy limit raportów wyczerpany', captcha: 'Weryfikacja nieudana, spróbuj ponownie', tip_link: 'Linki i wzmianki są niedozwolone', tip_len: 'Wskazówka: od 3 do 280 znaków', net: 'Serwer nie odpowiada, spróbuj później', bad: 'Nie udało się wysłać'
+    },
+    en: {
+      add: 'Share your find', stop: 'Cancel', hint: 'Click a spot on the map', title: 'My experience', layer: 'From players',
+      found: 'Found it here', empty: 'Searched, empty', seen: 'Seen here', none: 'Checked, not here',
+      tip: 'Tip about this spot (optional)', tip_only: 'Tip about this spot', send: 'Send', sending: 'Sending…',
+      fine: 'Marks appear at once, tips after review. No IPs or names are stored.',
+      need: 'Pick a mark or write a tip', thanks: 'Thanks! Your mark is on the map', thanks_tip: 'Thanks! The tip will appear after review', dup: 'This mark is already counted, thanks',
+      n_found: 'Found', n_empty: 'Empty', n_seen: 'Seen', n_none: 'Not there', players: 'Players', last: 'Last report',
+      few: 'Few reports, not confirmed yet', old: 'Old report, a patch may have changed this',
+      me_found: 'Found it too', me_empty: 'Empty for me', me_seen: 'Seen it too', me_none: 'Not there for me', add_tip: 'Add a tip', map_tip: 'Player tip', stamp: 'From players',
+      limit: 'Daily report limit reached', captcha: 'Check failed, please try again', tip_link: 'Links and mentions are not allowed', tip_len: 'Tip: 3 to 280 characters', net: 'Server is not responding, try later', bad: 'Could not send'
+    }
+  };
+  var W = function (k) { return CM_WORDS[S.lang][k] || k; };
+  var cmFloor = function () { return mapInfo(S.map).floors ? (S.floor === 'top' ? 0 : 1) : -1; };
+  var cmIsArc = function (kind) { return kind === 'arc'; };
+
+  function cmDevice() {
+    var d = store.get('far-device');
+    if (/^[a-f0-9]{32}$/.test(d || '')) return d;
+    var a = new Uint8Array(16);
+    crypto.getRandomValues(a);
+    d = Array.prototype.map.call(a, function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+    store.set('far-device', d);
+    return d;
+  }
+
+  // The layer is an extra: when the server is away the map simply goes without it.
+  function cmLoad(mapId) {
+    var have = CM.maps[mapId];
+    if (!CM_CFG.api || CM.pending[mapId] || (have && Date.now() - have.at < CM_TTL)) return;
+    CM.pending[mapId] = true;
+    fetch(CM_CFG.api + '/v1/points?map=' + encodeURIComponent(mapId)).then(function (r) {
+      if (!r.ok) throw new Error('status ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      CM.maps[mapId] = { at: Date.now(), pts: Array.isArray(j.pts) ? j.pts : [] };
+      if (S.map === mapId) cmRefresh();
+    }).catch(function () { /* optional layer */ }).then(function () { delete CM.pending[mapId]; });
+  }
+
+  function cmRefresh() {
+    layerSet = layerSet.filter(function (l) { return !l.cm; }).concat(cmLayers());
+    drawLayers();
+    paintLegend();
+  }
+
+  function cmMine() {
+    var c = CM.maps[S.map];
+    if (!c) return [];
+    var wf = cmFloor();
+    return c.pts.filter(function (p) { return p.f === wf && (p.k === 'map' || (p.k === S.kind && p.i === S.id)); });
+  }
+
+  function cmLayers() {
+    var mine = cmMine();
+    if (!mine.length) return [];
+    var cutoff = Date.now() / 1000 - CM_OLD;
+    return [{
+      key: 'cm', cm: true, label: W('layer'), glyph: 'dot', color: CM_COLOR, stroke: '#ffffff', r: 9.5,
+      pts: mine.map(function (p) {
+        var tipOnly = p.found + p.empty === 0;
+        var op = (tipOnly || p.pl >= CM_FIRM ? 1 : 0.55) * (p.last < cutoff ? 0.6 : 1);
+        return { x: p.x, y: p.y, n: tipOnly ? '!' : String(p.found), c: tipOnly ? CM_NOTE : (p.found ? CM_COLOR : CM_EMPTY), op: op, cm: p };
+      })
+    }];
+  }
+
+  function cmName(kind, id) { return kind === 'map' ? W('map_tip') : nameOf(kind, id); }
+
+  // Built as a node so the buttons keep their handlers whatever Leaflet does with clicks in popups.
+  function cmCard(p) {
+    var arc = cmIsArc(p.k), box = document.createElement('div'), html = '<h4>' + esc(cmName(p.k, p.i)) + '</h4>';
+    if (p.found + p.empty > 0) {
+      html += '<p class="cm-count"><b>' + esc(W(arc ? 'n_seen' : 'n_found')) + ': ' + p.found + '</b> · ' + esc(W(arc ? 'n_none' : 'n_empty')) + ': ' + p.empty + '</p>';
+      html += '<p>' + esc(W('players')) + ': ' + p.pl + '</p>';
+      if (p.pl < CM_FIRM) html += '<p class="cm-weak">' + esc(W('few')) + '</p>';
+    }
+    if (p.last) html += '<p>' + esc(W('last')) + ': ' + esc(new Date(p.last * 1000).toLocaleDateString(S.lang)) + '</p>';
+    if (p.last && p.last < Date.now() / 1000 - CM_OLD) html += '<p class="cm-weak">' + esc(W('old')) + '</p>';
+    (p.tips || []).forEach(function (t) {
+      html += '<blockquote>' + esc(t.t) + (t.l !== S.lang ? ' <i>' + esc(String(t.l).toUpperCase()) + '</i>' : '') + '</blockquote>';
+    });
+    html += '<div class="cm-foot"><span class="stamp crowd">' + esc(W('stamp')) + '</span><small>#' + Number(p.id) + '</small></div>';
+    if (CM_SEND) {
+      html += '<div class="cm-act">' + (CM_VERDICT[p.k]
+        ? '<button type="button" data-cmv="found">' + esc(W(arc ? 'me_seen' : 'me_found')) + '</button><button type="button" data-cmv="empty">' + esc(W(arc ? 'me_none' : 'me_empty')) + '</button>'
+        : '') + '<button type="button" data-cmv="">' + esc(W('add_tip')) + '</button></div>';
+    }
+    box.innerHTML = html;
+    $$('[data-cmv]', box).forEach(function (b) {
+      b.addEventListener('click', function () {
+        popup.remove();
+        cmOpen({ x: p.x, y: p.y, f: p.f, k: p.k, i: p.i }, b.dataset.cmv || null);
+      });
+    });
+    return box;
+  }
+
+  function cmSnap(ll) {
+    var x = Math.max(0, Math.min(1000, ll.lng)), y = Math.max(0, Math.min(1000, ll.lat));
+    var reach = Math.min(CM_SNAP_MAX, CM_SNAP_PX / Math.pow(2, map.getZoom()));
+    var find = function (cm) {
+      var best = null, bd = reach * reach;
+      layerSet.forEach(function (l) {
+        if (!!l.cm !== cm) return;
+        l.pts.forEach(function (p) {
+          var d = (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y);
+          if (d < bd) { bd = d; best = p; }
+        });
+      });
+      return best;
+    };
+    var hit = find(true) || find(false);
+    return hit ? { x: hit.x, y: hit.y } : { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
+  }
+
+  function cmPick(ll, p) {
+    var kept = CM.target ? CM.verdict : null;
+    if (p) { cmOpen({ x: p.x, y: p.y, f: p.f, k: p.k, i: p.i }, CM_VERDICT[p.k] ? kept : null); return; }
+    var at = cmSnap(ll);
+    cmOpen({ x: at.x, y: at.y, f: cmFloor(), k: S.kind || 'map', i: S.kind ? S.id : '-' }, kept);
+  }
+
+  function cmOpen(t, verdict) {
+    CM.target = t;
+    CM.verdict = verdict;
+    CM.aim = true;
+    map.getContainer().classList.add('cm-aim');
+    cmPin.clearLayers();
+    L.circleMarker([t.y, t.x], { radius: 14, color: CM_COLOR, weight: 3, fill: false, dashArray: '4 4', interactive: false }).addTo(cmPin);
+    cmPaintPanel();
+    cmPaintBar();
+  }
+
+  function cmClose() {
+    CM.aim = false;
+    CM.target = null;
+    CM.verdict = null;
+    map.getContainer().classList.remove('cm-aim');
+    cmPin.clearLayers();
+    var box = $('#cmPanel');
+    box.hidden = true;
+    box.innerHTML = '';
+    cmPaintBar();
+  }
+
+  function cmPaintBar() {
+    var bar = $('#cmBar');
+    bar.hidden = !CM_SEND || !S.map;
+    $('#cmAdd').textContent = W(CM.aim ? 'stop' : 'add');
+    $('#cmAdd').setAttribute('aria-pressed', String(CM.aim));
+    var hint = $('#cmHint');
+    hint.textContent = W('hint');
+    hint.hidden = !(CM.aim && !CM.target);
+  }
+
+  function cmPaintPanel() {
+    var t = CM.target, box = $('#cmPanel'), arc = cmIsArc(t.k), typed = $('#cmTip') ? $('#cmTip').value : '';
+    var choice = CM_VERDICT[t.k]
+      ? '<div class="cm-choice" role="group"><button type="button" class="yes" data-v="found" aria-pressed="' + (CM.verdict === 'found') + '">' + esc(W(arc ? 'seen' : 'found')) + '</button><button type="button" class="no" data-v="empty" aria-pressed="' + (CM.verdict === 'empty') + '">' + esc(W(arc ? 'none' : 'empty')) + '</button></div>'
+      : '';
+    box.innerHTML = '<h3>' + esc(W('title')) + '</h3><p class="cm-what">' + esc(cmName(t.k, t.i)) + ' · ' + esc(NAME('map', S.map)) + '</p>' + choice +
+      '<textarea id="cmTip" rows="2" maxlength="280" placeholder="' + esc(W(CM_VERDICT[t.k] ? 'tip' : 'tip_only')) + '"></textarea>' +
+      '<div id="cmCaptcha"></div><div class="cm-send"><button type="button" id="cmGo">' + esc(W('send')) + '</button><span id="cmMsg" role="status"></span></div>' +
+      '<p class="cm-fine">' + esc(W('fine')) + '</p>';
+    $('#cmTip').value = typed;
+    box.hidden = false;
+  }
+
+  var cmScript = null;
+  function cmTurnstile() {
+    if (window.turnstile) return Promise.resolve();
+    if (!cmScript) {
+      cmScript = new Promise(function (ok, no) {
+        var s = document.createElement('script');
+        s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+        s.onload = ok;
+        s.onerror = function () { cmScript = null; no(new Error('captcha')); };
+        document.head.appendChild(s);
+      });
+    }
+    return cmScript;
+  }
+
+  function cmToken() {
+    return cmTurnstile().then(function () {
+      return new Promise(function (ok, no) {
+        var fail = function () { no(new Error('captcha')); };
+        if (CM.widget !== null) { try { window.turnstile.remove(CM.widget); } catch (e) { /* already gone */ } CM.widget = null; }
+        CM.widget = window.turnstile.render($('#cmCaptcha'), {
+          sitekey: CM_CFG.turnstile, theme: 'dark', appearance: 'interaction-only', language: S.lang,
+          callback: ok, 'error-callback': fail, 'timeout-callback': fail
+        });
+      });
+    });
+  }
+
+  function cmToast(text) {
+    var el = $('#cmToast');
+    el.textContent = text;
+    el.hidden = false;
+    clearTimeout(cmToast.t);
+    cmToast.t = setTimeout(function () { el.hidden = true; }, 3800);
+  }
+
+  function cmMerge(mapId, point) {
+    if (!point) return;
+    var c = CM.maps[mapId] || (CM.maps[mapId] = { at: Date.now(), pts: [] });
+    c.at = Date.now();
+    c.pts = c.pts.filter(function (p) { return p.id !== point.id; }).concat([point]);
+  }
+
+  function cmSend() {
+    if (CM.busy || !CM.target) return;
+    var t = CM.target, mapId = S.map, tip = $('#cmTip').value.trim(), go = $('#cmGo'), msg = $('#cmMsg');
+    if (CM.verdict === null && !tip) { msg.textContent = W('need'); return; }
+    CM.busy = true;
+    go.disabled = true;
+    go.textContent = W('sending');
+    msg.textContent = '';
+    cmToken().then(function (token) {
+      var body = { map: mapId, floor: t.f, kind: t.k, id: t.i, x: t.x, y: t.y, lang: S.lang, device: cmDevice(), token: token };
+      if (CM.verdict !== null) body.verdict = CM.verdict;
+      if (tip) body.tip = tip;
+      return fetch(CM_CFG.api + '/v1/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+    }).then(function (res) {
+      if (!res.ok) throw new Error(res.j && res.j.error || 'bad');
+      cmMerge(mapId, res.j.point);
+      cmToast(W(res.j.tip ? 'thanks_tip' : res.j.dup ? 'dup' : 'thanks'));
+      CM.busy = false;
+      cmClose();
+      if (S.map === mapId) cmRefresh();
+    }).catch(function (err) {
+      CM.busy = false;
+      var code = err instanceof TypeError ? 'net' : err.message;
+      if (!CM.target) return;
+      go.disabled = false;
+      go.textContent = W('send');
+      msg.textContent = W(CM_WORDS[S.lang][code] ? code : 'bad');
+    });
+  }
+
+  // Leaving the map, floor or selection drops a half-filled report instead of filing it against the wrong spot.
+  function cmSync() {
+    var key = [S.map, S.floor, S.kind, S.id].join('|');
+    if (CM.key !== key) { CM.key = key; if (CM.aim) cmClose(); }
+    if (S.map) cmLoad(S.map);
+    cmPaintBar();
+  }
+
+  map.on('click', function (e) { if (CM.aim && !CM.busy) cmPick(e.latlng, null); });
+  $('#cmAdd').addEventListener('click', function () {
+    if (CM.aim) { cmClose(); return; }
+    popup.remove();
+    CM.aim = true;
+    map.getContainer().classList.add('cm-aim');
+    cmPaintBar();
+  });
+  $('#cmPanel').addEventListener('click', function (ev) {
+    var v = ev.target.closest && ev.target.closest('[data-v]');
+    if (v) {
+      CM.verdict = CM.verdict === v.dataset.v ? null : v.dataset.v;
+      $$('[data-v]', $('#cmPanel')).forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.v === CM.verdict)); });
+      return;
+    }
+    if (ev.target.id === 'cmGo') cmSend();
+  });
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && CM.aim && !CM.busy) cmClose(); });
+
   /* ---------- language, hash, chrome ---------- */
 
   function writeHash() {
@@ -766,6 +1075,7 @@
     return need('data/i18n.' + lang + '.js').then(function () {
       S.lang = lang;
       store.set('far-lang', lang);
+      if (CM.aim) cmClose();
       closeList();
       buildIndex();
       buildSelectors();
@@ -843,7 +1153,7 @@
     return nav.some(function (l) { return ['uk', 'be', 'kk'].indexOf(l) >= 0; }) ? 'ru' : 'en';
   }
 
-  FAR.api = { choose: choose, openMap: openMap, setLang: setLang, clear: clearSel, state: S, map: map, layers: function () { return layerSet; } };
+  FAR.api = { choose: choose, openMap: openMap, setLang: setLang, clear: clearSel, state: S, map: map, layers: function () { return layerSet; }, community: CM };
 
   var boot = readHash();
   setLang(boot.lang || browserLang()).then(function () {
