@@ -230,3 +230,4 @@ body[data-kind] .card:not(.lit) { opacity: .46; }
 .cm-act button:hover { background: #c01a5f; }
 @keyframes cmup { from { opacity: 0; transform: translate(-50%, 14px); } }
 @media (max-width: 820px) { #cmAdd { font-size: 19px; } .legend { bottom: 66px; } .cm-panel { bottom: 62px; max-height: calc(100% - 76px); } }
+@media (max-width: 1500px) { .legend { bottom: 66px; } }
