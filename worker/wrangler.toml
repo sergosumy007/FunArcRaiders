@@ -10,5 +10,5 @@ CACHE_SECONDS = "60"
 [[d1_databases]]
 binding = "DB"
 database_name = "funarcraiders-community"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "f7285d51-0b24-4675-9e2d-a237af1f5fa2"
 migrations_dir = "migrations"
