@@ -118,6 +118,9 @@ button.chip:hover { background: #4a3a14; }
 .legend .swatch { width: 11px; height: 11px; border-radius: 50%; border: 1px solid #fff9; }
 .legend .swatch.square { border-radius: 0; transform: rotate(45deg); } .legend .swatch.tri { border-radius: 0; clip-path: polygon(50% 0, 100% 100%, 0 100%); border: 0; }
 .legend small { color: var(--dust); }
+.legend.marks { left: auto; right: 64px; max-height: 70%; }
+.legend.marks h4 { margin: 8px 0 2px; font: 700 13px/1 var(--label); letter-spacing: .08em; text-transform: uppercase; color: var(--dust); }
+.ctrl button[aria-pressed="true"] { background: var(--ac); color: #15130e; }
 .ctrl { position: absolute; z-index: 5; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 4px; }
 .ctrl button { min-width: 38px; height: 38px; padding: 0 8px; background: var(--plate-2); border: 1px solid var(--edge); font: 800 20px/1 var(--label); letter-spacing: .05em; }
 .ctrl button:hover { background: var(--bone); color: var(--ink); }

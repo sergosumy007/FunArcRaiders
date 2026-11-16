@@ -47,6 +47,61 @@ MF_SUBCAT = {"arc_probe": "arc-probe", "arc_courier": "arc-courier", "wasp_husk"
 MF_NAME_ALIAS = {"car-trunk": "car", "kitchen-cupboard": "kitchen-cabinet", "kitchen-counter": "kitchen-cabinet", "locker": "work-lockers", "transformer": "transformer",
                  "tool-trolley": "tool-trolley", "medical-waste-bin": "medical-waste-bin", "office-desk": "office-desk", "bus": "bus", "fridge": "fridge"}
 NATURE_ALIAS = {"lemon": "lemons", "olives": "olives", "prickly_pear": "prickly_pear"}
+# Map markings: code -> (group, ArcTracker (kind, subtype) pins, MetaForge (category, subcategory) markers, names ru/pl/en).
+# ArcTracker pins share the map coordinates; MetaForge only adds kinds ArcTracker has no pins for.
+MARK_GROUPS = {"move": ("Перемещение", "Ruch", "Movement"), "place": ("Места", "Miejsca", "Places"),
+               "use": ("Устройства", "Urządzenia", "Devices"), "danger": ("Опасности", "Zagrożenia", "Hazards"),
+               "find": ("Находки и события", "Znaleziska i wydarzenia", "Finds and events")}
+MARKS = {
+    "extraction": ("move", [("location", "extraction")], [], ("Эвакуация", "Ewakuacja", "Extraction")),
+    "hatch": ("move", [("location", "raiderHatch")], [], ("Люк рейдеров", "Właz rajderów", "Raider hatch")),
+    "spawn": ("move", [("location", "playerSpawn")], [], ("Точка появления", "Punkt startowy", "Player spawn")),
+    "zipline": ("move", [("interactable", "zipline")], [], ("Зиплайн", "Tyrolka", "Zipline")),
+    "mastlift": ("move", [("interactable", "mastLift")], [], ("Подъёмник на мачту", "Winda na maszt", "Mast lift")),
+    "stairs": ("move", [("location", "stairsDown")], [], ("Спуск вниз", "Zejście w dół", "Stairs down")),
+    "metro": ("move", [], [("locations", "metro_entrance"), ("locations", "metro_station")], ("Метро", "Metro", "Metro")),
+    "gondola": ("move", [], [("locations", "gondola_landing")], ("Станция гондолы", "Stacja gondoli", "Gondola landing")),
+    "lockedroom": ("place", [("location", "lockedRoom")], [], ("Запертая комната", "Zamknięty pokój", "Locked room")),
+    "breach": ("place", [], [("locations", "breach_room")], ("Комната со взломом", "Pokój do wyważenia", "Breach room")),
+    "supply": ("place", [("location", "supplyCallStation")], [], ("Вызов снабжения", "Wezwanie zaopatrzenia", "Supply call station")),
+    "depot": ("place", [("location", "fieldDepot")], [], ("Полевой склад", "Magazyn polowy", "Field depot")),
+    "shelter": ("place", [("location", "emergencyShelter")], [], ("Убежище", "Schron awaryjny", "Emergency shelter")),
+    "camp": ("place", [], [("locations", "raider_camp")], ("Лагерь рейдеров", "Obóz rajderów", "Raider camp")),
+    "probe": ("place", [("location", "extractionProbeSite")], [], ("Место зонда", "Miejsce sondy", "Probe site")),
+    "capsule": ("place", [("location", "capsuleDeliveryStation"), ("location", "capsuleRequestTerminal"), ("location", "dropOffStation")], [],
+                ("Станция капсул", "Stacja kapsuł", "Capsule station")),
+    "fuelcell": ("place", [], [("locations", "fuel-cell")], ("Топливный элемент", "Ogniwo paliwowe", "Fuel cell")),
+    "power": ("use", [("interactable", "power")], [], ("Рубильник", "Przełącznik zasilania", "Power switch")),
+    "button": ("use", [("interactable", "puzzle")], [("locations", "button"), ("events", "puzzle_button")], ("Кнопка, головоломка", "Przycisk, zagadka", "Button, puzzle")),
+    "android": ("use", [("interactable", "android")], [], ("Андроид", "Android", "Android")),
+    "aed": ("use", [("interactable", "aedStation")], [], ("Станция дефибриллятора", "Stacja AED", "AED station")),
+    "printer": ("use", [("interactable", "cardPrinter")], [], ("Принтер карт", "Drukarka kart", "Card printer")),
+    "bunker": ("use", [("interactable", "bunkerActivation"), ("interactable", "eventBunkerDoor")], [], ("Пульт, дверь бункера", "Konsola, drzwi bunkra", "Bunker console, door")),
+    "gate": ("use", [("interactable", "lockedGateConsole")], [], ("Пульт запертых ворот", "Konsola zamkniętej bramy", "Locked gate console")),
+    "antenna": ("use", [], [("events", "calibrated_transmitter"), ("events", "antenna"), ("locations", "antenna")], ("Передатчик, антенна", "Nadajnik, antena", "Transmitter, antenna")),
+    "detector": ("use", [], [("locations", "mountaineers_detector")], ("Детектор альпинистов", "Detektor alpinistów", "Mountaineers' detector")),
+    "camera": ("danger", [("hazard", "camera")], [], ("Камера", "Kamera", "Security camera")),
+    "caralarm": ("danger", [("hazard", "carAlarm")], [], ("Автосигнализация", "Alarm samochodowy", "Car alarm")),
+    "mine": ("danger", [("hazard", "mine")], [], ("Мина", "Mina", "Mine")),
+    "minefield": ("danger", [], [("events", "mine")], ("Минное поле (событие)", "Pole minowe (wydarzenie)", "Minefield (event)")),
+    "noisy": ("danger", [("hazard", "noisyAndroid")], [], ("Шумный андроид", "Hałaśliwy android", "Noisy android")),
+    "metaldet": ("danger", [("hazard", "metalDetector")], [], ("Металлодетектор", "Wykrywacz metalu", "Metal detector")),
+    "motion": ("danger", [("hazard", "motionSensor")], [], ("Датчик движения", "Czujnik ruchu", "Motion sensor")),
+    "sludge": ("danger", [("hazard", "toxicSludge")], [], ("Токсичная жижа", "Toksyczny szlam", "Toxic sludge")),
+    "freeze": ("danger", [("hazard", "flashFreeze")], [], ("Мгновенная заморозка", "Błyskawiczne zamrożenie", "Flash freeze")),
+    "bird": ("find", [], [("events", "bird")], ("Птичье гнездо", "Ptasie gniazdo", "Bird nest")),
+    "dig": ("find", [], [("events", "dig_spot")], ("Место раскопок", "Miejsce kopania", "Dig spot")),
+    "snow": ("find", [("misc", "snowPile")], [], ("Сугроб", "Zaspa", "Snow pile")),
+    "piano": ("find", [("misc", "piano")], [], ("Пианино", "Pianino", "Piano")),
+    "shipmodel": ("find", [], [("events", "ship_model")], ("Модель корабля", "Model statku", "Ship model")),
+    "payload": ("find", [], [("events", "emperor_payload")], ("Груз «Император»", "Ładunek Emperor", "Emperor payload")),
+    "cargo": ("find", [], [("events", "frigate_cargo")], ("Груз фрегата", "Ładunek fregaty", "Frigate cargo")),
+    "droploot": ("find", [], [("events", "drop_in_loot")], ("Сброшенная добыча", "Zrzut łupu", "Drop-in loot")),
+    "carrierhatch": ("find", [], [("events", "carrier_hatch")], ("Люк носителя", "Właz nośnika", "Carrier hatch")),
+    "harvester": ("find", [], [("events", "harvester")], ("Сборщик", "Żniwiarz", "Harvester")),
+}
+MARK_AT = {src: code for code, (_, at, _, _) in MARKS.items() for src in at}
+MARK_MF = {src: code for code, (_, _, mf, _) in MARKS.items() for src in mf}
 # Keys whose door has no point in any source; the item text names the map.
 KEY_MAP_ONLY = {"seed_vault_box_key": "stella-montis", "emperor_gateway_conduit": "pendola-pass", "flushing_terminal_key": "the-spaceport"}
 HINTS = [("map", "stella-montis", None, ["Афелий", "Дедлайн", "Импульсная мина", "Зажигалка", "Самонаводящаяся граната", "Газовая мина"], "t.me/duckraiders/1415"),
@@ -324,7 +379,8 @@ def main():
         project = lambda m: (round1(m["lng"] * ax + bx), round1(m["lat"] * ay + by))
         floor_of = lambda p: 1 if str(p.get("floor")).strip('"') == "bottom" else 0
         layer = {"C": collections.defaultdict(list), "N": collections.defaultdict(list), "A": collections.defaultdict(list),
-                 "Q": collections.defaultdict(list), "K": collections.defaultdict(list), "B": {}, "L": []}
+                 "Q": collections.defaultdict(list), "K": collections.defaultdict(list), "B": {}, "L": [],
+                 "M": collections.defaultdict(list)}
         label_rows, quest_tools = [], collections.defaultdict(list)
         at_conts = set()
 
@@ -341,6 +397,9 @@ def main():
                 if ft:
                     label_rows.append((x, y, ft, p["ref"], p.get("title")))
                 continue
+            mark = MARK_AT.get((kind, sub))
+            if mark:
+                layer["M"][mark] += [x, y, f]
             if kind == "nature":
                 for t in tags:
                     if t.startswith("gives:"):
@@ -416,6 +475,8 @@ def main():
                     unmatched["mf:" + (inst or sub)] += 1
             elif cat == "events" and sub == "bunker":
                 layer["K"]["hidden_bunker_key"] += [x, y, f]
+            elif (cat, sub) in MARK_MF:
+                layer["M"][MARK_MF[(cat, sub)]] += [x, y, f]
             elif cat == "quests":
                 qid = quest_by_slug.get(sub)
                 if qid and not any(r for r in layer["Q"].get(qid, []) if r[2] is not None):
@@ -713,7 +774,9 @@ def main():
             for aid in arcs_text:
                 slug = {"assessor": "arc-assessor", "reclaimer": "arc-reclaimer"}.get(aid, aid)
                 en_search["arc:" + aid] = (names["arc"]["en"].get(slug) or {}).get("name") or aid
-        payload = {"ui": ui[loc], "types": {k: v[li] for k, v in ui["types"].items()}, "rarity": {k: v[li] for k, v in ui["rarity"].items()},
+        marks_ui = {"mk_" + c: v[3][li] for c, v in MARKS.items()}
+        marks_ui.update({"mkg_" + g: v[li] for g, v in MARK_GROUPS.items()})
+        payload = {"ui": {**ui[loc], **marks_ui}, "marks": [[c, v[0]] for c, v in MARKS.items()], "types": {k: v[li] for k, v in ui["types"].items()}, "rarity": {k: v[li] for k, v in ui["rarity"].items()},
                    "threats": {k: v[li] for k, v in ui["threats"].items()}, "zones": {k: v[li] for k, v in ui["zones"].items()},
                    "names": names_block, "text": text, "hints": hints_text, "labels": label_text.get(loc, {}), "en": en_search}
         print(f"  i18n {loc}", js(f"i18n.{loc}.js", payload, f"FAR.i18n.{loc}"))
@@ -722,7 +785,9 @@ def main():
     summary = {"items": len(core_items), "items_on_maps": sum(1 for e in core_items if e.get("c")), "blueprints": sum(1 for e in core_items if e.get("bp")),
                "blueprints_on_maps": sum(1 for e in core_items if e.get("bp") and e.get("c")), "quests": len(core_quests), "quests_on_maps": sum(1 for e in core_quests if e.get("c")),
                "quests_with_steps_on_map": sum(1 for q in quests if any(any(r[2] is not None for r in per_map[s]["layer"]["Q"].get(q, [])) for s, _ in MAPS)),
-               "arcs": len(core_arcs), "arcs_on_maps": sum(1 for e in core_arcs if e.get("c")), "points": sum(sum(len(v) // 3 for v in pm["layer"]["C"].values()) for pm in per_map.values())}
+               "arcs": len(core_arcs), "arcs_on_maps": sum(1 for e in core_arcs if e.get("c")), "points": sum(sum(len(v) // 3 for v in pm["layer"]["C"].values()) for pm in per_map.values()),
+               "marks": sum(sum(len(v) // 3 for v in pm["layer"]["M"].values()) for pm in per_map.values()),
+               "mark_kinds_empty": sorted(c for c in MARKS if not any(pm["layer"]["M"].get(c) for pm in per_map.values()))}
     print("SUMMARY", json.dumps(summary, ensure_ascii=False))
     print("arcs without points:", [e["id"] for e in core_arcs if not e.get("c")])
 

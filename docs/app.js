@@ -99,6 +99,7 @@
     maxBoundsViscosity: 1, renderer: L.canvas({ padding: 0.3, tolerance: 4 })
   });
   var tiles = null;
+  var marks = L.featureGroup().addTo(map);
   var overlay = L.featureGroup().addTo(map);
   var labels = L.layerGroup().addTo(map);
   var popup = L.popup({ closeButton: false, autoPanPadding: [30, 30], offset: [0, -3], className: 'pop', maxWidth: 260 });
@@ -333,6 +334,67 @@
     return itemLayers(md, DET('items')[id] || {}, id, wf);
   }
 
+  /* ---------- map markings: exits, devices, hazards; shown with or without a selection ---------- */
+
+  var MK_COLOR = { move: '#5fd0bd', place: '#f2d675', use: '#9fb4ff', danger: '#eb7a4f', find: '#c9c2b3' };
+  var MK_GLYPH = { move: 'tri', place: 'diamond', use: 'dot', danger: 'tri', find: 'dot' };
+  var MK_GROUPS = ['move', 'place', 'use', 'danger', 'find'];
+  var MK = (function () {
+    var on = { extraction: 1, hatch: 1 };
+    try { var v = JSON.parse(store.get('far_marks')); if (v && typeof v === 'object' && !Array.isArray(v)) on = v; } catch (e) { /* default */ }
+    return on;
+  })();
+  var mkOpen = false;
+  function mkSave() { store.set('far_marks', JSON.stringify(MK)); }
+  function mkList() { return T().marks || []; }
+  function mkWf() { var info = S.map && mapInfo(S.map); return info && info.floors ? (S.floor === 'top' ? 0 : 1) : null; }
+
+  function drawMarks() {
+    marks.clearLayers();
+    var md = S.map && FAR.mapdata[S.map];
+    if (!md || !md.M) return;
+    var wf = mkWf();
+    mkList().forEach(function (pair) {
+      var code = pair[0], g = pair[1];
+      if (!MK[code]) return;
+      flatPoints(md.M[code], wf).forEach(function (p) {
+        marks.addLayer(new Glyph([p.y, p.x], { radius: 3.4, r0: 3.4, color: '#15130e', weight: 1.1, fillColor: MK_COLOR[g], fillOpacity: 0.95,
+          glyph: MK_GLYPH[g], bubblingMouseEvents: false, mk: code, mkg: g, low: p.f === 1 }));
+      });
+    });
+  }
+
+  marks.on('click', function (e) {
+    var m = e.sourceTarget || e.layer;
+    if (!m.options.mk) return;
+    if (CM.aim) { cmPick(m.getLatLng()); return; }
+    popup.setLatLng(m.getLatLng()).setContent('<h4>' + esc(U('mk_' + m.options.mk)) + '</h4><p>' + esc(U('mkg_' + m.options.mkg)) + '</p>' +
+      (m.options.low ? '<p>' + esc(U('lower')) + '</p>' : '')).openOn(map);
+  });
+
+  function paintMarks() {
+    var box = $('#marks'), md = S.map && FAR.mapdata[S.map];
+    if (!mkOpen || !md || !md.M) { box.hidden = true; box.innerHTML = ''; return; }
+    var wf = mkWf(), rows = {}, anyOn = false;
+    mkList().forEach(function (pair) {
+      var n = flatPoints(md.M[pair[0]], wf).length;
+      if (!n) return;
+      (rows[pair[1]] = rows[pair[1]] || []).push([pair[0], n]);
+      if (MK[pair[0]]) anyOn = true;
+    });
+    var html = '<h3><span>' + esc(U('marks')) + '</span><button type="button" data-mk-all="1">' + esc(U(anyOn ? 'layer_none' : 'layer_all')) + '</button></h3>';
+    MK_GROUPS.forEach(function (g) {
+      if (!rows[g]) return;
+      var shape = MK_GLYPH[g] === 'diamond' ? 'square' : MK_GLYPH[g] === 'tri' ? 'tri' : '';
+      html += '<h4>' + esc(U('mkg_' + g)) + '</h4>' + rows[g].map(function (r) {
+        return '<label><input type="checkbox" data-mk="' + esc(r[0]) + '"' + (MK[r[0]] ? ' checked' : '') + '><i class="swatch ' + shape + '" style="background:' +
+          MK_COLOR[g] + '"></i><span>' + esc(U('mk_' + r[0])) + '</span><small>' + r[1] + '</small></label>';
+      }).join('');
+    });
+    box.innerHTML = html;
+    box.hidden = false;
+  }
+
   /* ---------- painting ---------- */
 
   function paintLegend() {
@@ -413,6 +475,7 @@
         return '<button type="button" data-floor="' + f + '" aria-pressed="' + (S.floor === f) + '" title="' + esc(U('floor_' + f)) + '">' + (f === 'top' ? '▲' : '▼') + '</button>';
       }).join('');
     }
+    if (S.map) html += '<button type="button" data-marks="1" aria-pressed="' + mkOpen + '" title="' + esc(U('marks')) + '" aria-label="' + esc(U('marks_btn')) + '">◈</button>';
     html += '<button type="button" data-zoom="1" aria-label="+">+</button><button type="button" data-zoom="-1" aria-label="-">−</button><button type="button" data-reset="1" title="' + esc(U('reset')) + '">⌖</button>';
     $('#ctrl').innerHTML = html;
   }
@@ -463,7 +526,9 @@
       }
       if (baseDue) { baseDue = false; setTiles(); paintLabels(); sweep(); }
       layerSet = ((S.kind && lit(S.map)) ? buildLayers(md) : []).concat(cmLayers());
+      drawMarks();
       drawLayers();
+      paintMarks();
       paintLegend();
       paintGear();
       paintStatus();
@@ -1108,6 +1173,14 @@
     var zoom = t.closest && t.closest('[data-zoom]');
     if (zoom) { map.setZoom(map.getZoom() + Number(zoom.dataset.zoom)); return; }
     if (t.closest && t.closest('[data-reset]')) { fit(); return; }
+    if (t.closest && t.closest('[data-marks]')) { mkOpen = !mkOpen; paintMarks(); paintCtrl(); return; }
+    if (t.closest && t.closest('[data-mk-all]')) {
+      var on = !mkList().some(function (p) { return MK[p[0]]; });
+      MK = {};
+      if (on) mkList().forEach(function (p) { MK[p[0]] = 1; });
+      mkSave(); drawMarks(); drawLayers(); paintMarks();
+      return;
+    }
     var all = t.closest && t.closest('[data-all]');
     if (all) {
       var anyOn = layerSet.some(function (l) { return !isOff(l); });
@@ -1116,6 +1189,12 @@
       return;
     }
     if (openList && !(t.closest && t.closest('.sel'))) { closeList(); syncInputs(); }
+  });
+  $('#marks').addEventListener('change', function (ev) {
+    var k = ev.target.dataset.mk;
+    if (!k) return;
+    if (ev.target.checked) MK[k] = 1; else delete MK[k];
+    mkSave(); drawMarks(); drawLayers(); paintMarks();
   });
   $('#legend').addEventListener('change', function (ev) {
     var k = ev.target.dataset.key;
